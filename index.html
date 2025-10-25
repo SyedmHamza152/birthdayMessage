@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Birthday Countdown</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      background: linear-gradient(135deg, #ff6a88, #ffcc70);
+      font-family: "Poppins", sans-serif;
+      overflow: hidden;
+      margin: 0;
+    }
+
+    /* Intro (pre-countdown) */
+    #intro {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #fff;
+      background: radial-gradient(1200px 600px at 50% -20%, rgba(255,255,255,0.15), transparent 60%);
+      z-index: 100;
+      animation: fadeIn 800ms ease both;
+    }
+
+    #intro h1 {
+      font-size: 3rem;
+      margin: 0 20px;
+      text-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+
+    #intro .subtitle {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      opacity: 0.95;
+    }
+
+    .typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 3px solid rgba(255,255,255,0.85);
+      width: 0;
+      animation: typing 3s steps(28, end) forwards, caret 800ms step-end infinite;
+      animation-delay: 0.5s;
+    }
+
+    .hearts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -40px;
+      width: 18px;
+      height: 18px;
+      background: #ff5da2;
+      transform: rotate(45deg);
+      box-shadow: 0 6px 18px rgba(255,93,162,0.6);
+      animation: floatUp calc(6s + var(--speed, 0s)) linear infinite;
+      left: var(--x, 50%);
+      opacity: 0.9;
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: #ff5da2;
+      border-radius: 50%;
+    }
+
+    .heart::before { left: -9px; top: 0; }
+    .heart::after { top: -9px; left: 0; }
+
+    .sparkle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #fff 0%, #fff 50%, transparent 60%);
+      border-radius: 50%;
+      filter: drop-shadow(0 0 8px #fff);
+      animation: twinkle calc(2s + var(--delay, 0s)) ease-in-out infinite;
+      left: var(--sx, 50%);
+      top: var(--sy, 50%);
+      opacity: 0.8;
+    }
+
+    .fadeOut {
+      animation: fadeOut 800ms ease forwards;
+    }
+
+    .fadeInUp {
+      animation: fadeInUp 700ms ease both;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 30ch; }
+    }
+
+    @keyframes caret {
+      50% { border-color: transparent; }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(45deg) scale(0.9); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-110vh) rotate(45deg) scale(1.2); opacity: 0; }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { transform: scale(0.6); opacity: 0.4; }
+      50% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Countdown */
+    #countdown {
+      font-size: 3rem;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+      transition: opacity 1s ease-in-out;
+      display: none;
+    }
+
+    /* Countdown message */
+    #message {
+      margin-top: 15px;
+      font-size: 1.5rem;
+      color: #fff;
+      opacity: 0.9;
+      transition: opacity 1s ease-in-out;
+      display: none;
+    }
+
+    /* Counter screen container and extras */
+    #counterScreen {
+      position: relative;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      height: 100%;
+    }
+
+    #hint {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.95);
+      letter-spacing: 0.3px;
+      animation: pulse 1.6s ease-in-out infinite;
+      user-select: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.06); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.9; }
+    }
+
+    #secondProgress {
+      position: relative;
+      width: min(420px, 80vw);
+      height: 6px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+      display: none;
+    }
+
+    #secondProgress span {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #fff59d, #ff80ab);
+      box-shadow: 0 0 12px rgba(255,255,255,0.5);
+      transition: width 80ms linear;
+    }
+
+    /* Balloons */
+    .balloon {
+      position: absolute;
+      bottom: -120px;
+      width: var(--w, 36px);
+      height: calc(var(--w, 36px) * 1.3);
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0) 35%), var(--c, #ff8a80);
+      border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+      box-shadow: inset -6px -10px 16px rgba(0,0,0,0.08);
+      left: var(--x, 50%);
+      animation: rise var(--dur, 12s) linear infinite;
+      opacity: 0.9;
+      z-index: 0;
+    }
+
+    .balloon::after {
+      content: "";
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 24px;
+      background: rgba(255,255,255,0.6);
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-120vh) translateX(var(-- drift, 0px)); opacity: 0; }
+    }
+
+    /* Tap hearts */
+    .popHeart {
+      position: fixed;
+      font-size: var(--size, 18px);
+      will-change: transform, opacity;
+      transform: translate(-50%, -50%) scale(0.6);
+      animation: popUp 1s ease forwards;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    @keyframes popUp {
+      0% { opacity: 0; transform: translate(-50%, -20%) scale(0.6) rotate(-8deg); }
+      20% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -120%) scale(1.2) rotate(8deg); }
+    }
+
+    /* Birthday Message */
+    #birthdayMessage {
+      display: none;
+      font-size: 3.5rem;
+      font-weight: bold;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 0 20px #ffeb3b, 0 0 40px #ff4081, 0 0 60px #ffeb3b;
+      animation: bounceIn 2s ease forwards, glow 2s infinite alternate;
+      position: relative;
+      z-index: 900;
+    }
+
+    /* Cake */
+    #cake {
+      display: none;
+      position: relative;
+      margin-top: 80px;
+      width: 120px;
+      height: 80px;
+      background: #8d6e63;
+      border-radius: 10px;
+      box-shadow: inset 0 -10px 0 #5d4037;
+      z-index: 850;
+    }
+
+    #cake::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 40px;
+      background: #ffccbc;
+      border-radius: 5px;
+    }
+
+    /* Candle */
+    .candle {
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px;
+      height: 40px;
+      background: #fff;
+      border-radius: 3px;
+    }
+
+    .flame {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 20px;
+      background: radial-gradient(circle, #ffeb3b 40%, #ff9800 70%, transparent 80%);
+      border-radius: 50% 50% 50% 50%;
+      animation: flicker 0.3s infinite alternate;
+      opacity: 1;
+    }
+
+    @keyframes flicker {
+      from { transform: translateX(-50%) scale(1); opacity: 0.9; }
+      to { transform: translateX(-50%) scale(1.1); opacity: 1; }
+    }
+
+    /* Candle blow (fade out flame) */
+    .blowOut {
+      animation: blow 1s forwards;
+    }
+
+    @keyframes blow {
+      from { opacity: 1; transform: translateX(-50%) scale(1); }
+      to { opacity: 0; transform: translateX(-50%) scale(0); }
+    }
+
+    /* Bounce entry */
+    @keyframes bounceIn {
+      0% { transform: scale(0) rotateY(0deg); opacity: 0; }
+      60% { transform: scale(1.2) rotateY(180deg); opacity: 1; }
+      100% { transform: scale(1) rotateY(360deg); opacity: 1; }
+    }
+
+    /* Glow */
+    @keyframes glow {
+      from { text-shadow: 0 0 20px #ff4081, 0 0 40px #ffeb3b; }
+      to { text-shadow: 0 0 30px #fff176, 0 0 60px #f50057; }
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      top: -10px;
+      animation: fall 3s linear infinite;
+      opacity: 0.8;
+      z-index: 1000;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(360deg); }
+    }
+
+    /* Letters lifted by balloons */
+    .liftContainer { position: relative; display: inline-block; }
+    .letterWrap { position: relative; display: inline-block; margin: 0 2px; }
+    .letter { display: inline-block; will-change: transform, opacity; }
+    .carryBalloon {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translate(-50%, 6px);
+      width: 14px;
+      height: 18px;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.0) 40%), var(--c, #ff80ab);
+      border-radius: 50% 50% 45% 45% / 55% 55% 45% 45%;
+      box-shadow: inset -3px -5px 8px rgba(0,0,0,0.12);
+    }
+    .carryBalloon::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -12px;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 14px;
+      background: rgba(255,255,255,0.7);
+    }
+
+    .flyUp { animation: flyUp var(--dur, 1.6s) ease-in forwards; }
+    @keyframes flyUp {
+      0% { transform: translateY(0) translateX(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-140px) translateX(var(--dx, 0px)) scale(1.05); opacity: 0; }
+    }
+
+    /* 3D Celebration Scene */
+    #scene3d {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      perspective: 1200px;
+      z-index: 1200;
+      opacity: 0;
+      animation: sceneFadeIn 1.2s ease forwards;
+    }
+
+    @keyframes sceneFadeIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .sceneInner {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      transform-style: preserve-3d;
+    }
+
+    .birthday3DText {
+      font-size: 56px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 1px;
+      transform: rotateX(15deg) rotateY(-12deg) translateZ(20px);
+      text-shadow: 
+        0 3px 0 #ff80ab, 
+        0 6px 0 #ff80ab, 
+        0 9px 0 #ff80ab,
+        0 12px 24px rgba(0,0,0,0.4), 
+        0 0 40px rgba(255,255,255,0.6),
+        0 0 80px rgba(255,128,171,0.3);
+      animation: textFloat3D 4s ease-in-out infinite;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: visible;
+    }
+
+    @keyframes textFloat3D {
+      0%, 100% { 
+        transform: rotateX(15deg) rotateY(-12deg) translateZ(20px) translateY(0) scale(1); 
+      }
+      25% { 
+        transform: rotateX(15deg) rotateY(-8deg) translateZ(25px) translateY(-8px) scale(1.02); 
+      }
+      50% { 
+        transform: rotateX(15deg) rotateY(-12deg) translateZ(20px) translateY(-12px) scale(1.05); 
+      }
+      75% { 
+        transform: rotateX(15deg) rotateY(-16deg) translateZ(15px) translateY(-6px) scale(1.02); 
+      }
+    }
+
+    .loveLetter3D {
+      position: relative;
+      width: 280px;
+      height: 350px;
+      transform-style: preserve-3d;
+      transform: rotateX(15deg) rotateY(-10deg);
+      animation: letterFloat3D 6s ease-in-out infinite;
+      filter: drop-shadow(0 25px 50px rgba(0,0,0,0.4));
+    }
+
+    @keyframes letterFloat3D {
+      0%, 100% { 
+        transform: rotateX(15deg) rotateY(-10deg) translateY(0) scale(1); 
+      }
+      50% { 
+        transform: rotateX(15deg) rotateY(-10deg) translateY(-15px) scale(1.05); 
+      }
+    }
+
+    .letterEnvelope {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+      border-radius: 8px;
+      box-shadow: 
+        inset 0 0 0 2px rgba(255,255,255,0.4),
+        0 8px 16px rgba(0,0,0,0.2);
+      transform-style: preserve-3d;
+    }
+
+    .letterEnvelope::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+      border-radius: 8px 8px 0 0;
+      transform-origin: bottom center;
+      transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .letterEnvelope.opened::before {
+      transform: rotateX(-120deg) translateZ(20px);
+    }
+
+    .letterEnvelope::after {
+      content: "💌";
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 32px;
+      opacity: 0.9;
+      z-index: 2;
+    }
+
+    /* Enhanced 3D faces for envelope */
+    .letterEnvelope .side1, .letterEnvelope .side2 {
+      position: absolute;
+      background: inherit;
+      border-radius: 8px;
+      box-shadow: 
+        inset 0 0 0 2px rgba(255,255,255,0.3),
+        0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .letterEnvelope .side1 { 
+      left: 0; right: 0; height: 12px; bottom: -12px; 
+      filter: brightness(0.7); 
+      transform: rotateX(90deg);
+    }
+    
+    .letterEnvelope .side2 { 
+      top: 0; bottom: 0; width: 12px; right: -12px; 
+      filter: brightness(0.8); 
+      transform: rotateY(90deg);
+    }
+    
+    .letterHeart {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) translateZ(10px);
+      font-size: 48px;
+      color: #ff69b4;
+      animation: heartBeat3D 2s ease-in-out infinite;
+      z-index: 3;
+    }
+
+    @keyframes heartBeat3D {
+      0%, 100% { 
+        transform: translate(-50%, -50%) translateZ(10px) scale(1); 
+      }
+      50% { 
+        transform: translate(-50%, -50%) translateZ(15px) scale(1.2); 
+      }
+    }
+
+    /* Floating particles around gift */
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #fff 0%, #ff80ab 70%, transparent 100%);
+      border-radius: 50%;
+      animation: particleFloat 8s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes particleFloat {
+      0% { 
+        transform: translateY(0) translateX(0) scale(0.5) rotate(0deg);
+        opacity: 0;
+      }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { 
+        transform: translateY(-200px) translateX(100px) scale(1.2) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    #openLetterCta {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 40px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 
+        0 2px 0 #ff80ab, 
+        0 4px 0 #ff80ab, 
+        0 6px 12px rgba(0,0,0,0.4),
+        0 0 30px rgba(255,255,255,0.6);
+      letter-spacing: 1px;
+      cursor: pointer;
+      user-select: none;
+      padding: 12px 24px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(255,128,171,0.2), rgba(255,202,40,0.2));
+      border: 2px solid rgba(255,255,255,0.3);
+      outline: none;
+      transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: translateZ(10px);
+      animation: ctaPulse 2s ease-in-out infinite;
+      opacity: 1;
+      visibility: visible;
+      z-index: 1000;
+    }
+
+    @keyframes ctaPulse {
+      0%, 100% { 
+        transform: translateZ(10px) scale(1); 
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      }
+      50% { 
+        transform: translateZ(15px) scale(1.05); 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+      }
+    }
+
+    #openLetterCta:hover { 
+      transform: translateZ(20px) scale(1.08); 
+      background: linear-gradient(135deg, rgba(255,128,171,0.3), rgba(255,202,40,0.3));
+      border-color: rgba(255,255,255,0.5);
+    }
+    
+    #openLetterCta:focus-visible { 
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.7), 0 12px 30px rgba(0,0,0,0.3);
+    }
+
+    #finalMessage {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1300;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      animation: messageFadeIn 1.5s ease forwards;
+      cursor: pointer;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: linear-gradient(135deg, #ff6a88, #ffcc70);
+      scroll-behavior: smooth;
+    }
+
+    @keyframes messageFadeIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Love Letter Design */
+    .letterContainer {
+      position: relative;
+      max-width: 600px;
+      width: 90%;
+      margin: 40px auto;
+      min-height: calc(100vh - 80px);
+    }
+    
+    /* Mobile-first responsive design for letter content */
+    @media screen and (max-width: 768px) {
+      .letterContainer {
+        max-width: 100%;
+        width: 95%;
+        margin: 20px auto;
+        padding: 0 10px;
+      }
+      
+      .letterPaper {
+        padding: 20px;
+        margin: 0;
+      }
+      
+      .letterContent {
+        font-size: 16px;
+        line-height: 1.6;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+      }
+      
+      .letterHeader {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+      }
+      
+      .letterGreeting {
+        font-size: 24px;
+      }
+      
+      .letterDate {
+        font-size: 12px;
+      }
+      
+      .letterSignature {
+        font-size: 20px;
+        margin-top: 20px;
+      }
+    }
+
+    .letterPaper {
+      position: relative;
+      background: #fff;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      animation: letterFloat 6s ease-in-out infinite;
+      opacity: 1;
+      visibility: visible;
+      z-index: 10;
+    }
+
+    @keyframes letterFloat {
+      0%, 100% { transform: translateY(0) rotateX(0deg); }
+      50% { transform: translateY(-10px) rotateX(2deg); }
+    }
+
+    .letterHeader {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #ffb6c1;
+      padding-bottom: 15px;
+      opacity: 1;
+      visibility: visible;
+      position: relative;
+      z-index: 10;
+    }
+
+    .letterDate {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .letterGreeting {
+      font-family: 'Brush Script MT', cursive;
+      font-size: 28px;
+      color: #d63384;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .letterContent {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      line-height: 1.8;
+      color: #333;
+      text-align: left;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      position: relative;
+      z-index: 10;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .letterSignature {
+      text-align: right;
+      margin-top: 30px;
+      font-family: 'Brush Script MT', cursive;
+      font-size: 24px;
+      color: #d63384;
+      font-weight: bold;
+      opacity: 1;
+      visibility: visible;
+      position: relative;
+      z-index: 10;
+    }
+
+    .letterHearts {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 16px;
+      color: #ff69b4;
+      animation: heartBeat 2s ease-in-out infinite;
+    }
+
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .letterLines {
+      position: absolute;
+      left: 30px;
+      right: 30px;
+      top: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        transparent,
+        transparent 24px,
+        rgba(255, 182, 193, 0.1) 24px,
+        rgba(255, 182, 193, 0.1) 25px
+      );
+      pointer-events: none;
+    }
+
+    .letterSeal {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, #ff69b4, #ff1493);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      animation: sealGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes sealGlow {
+      0%, 100% { 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 0 0 rgba(255, 105, 180, 0.5);
+      }
+      50% { 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 0 20px rgba(255, 105, 180, 0.8);
+      }
+    }
+
+    /* Interactive love elements */
+    .loveHeart {
+      position: absolute;
+      font-size: 24px;
+      color: #ff69b4;
+      pointer-events: none;
+      animation: loveFloat 4s ease-in-out infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes loveFloat {
+      0%, 100% { 
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 0.8;
+      }
+      25% { 
+        transform: translateY(-20px) scale(1.1) rotate(5deg);
+        opacity: 1;
+      }
+      50% { 
+        transform: translateY(-10px) scale(1.2) rotate(-3deg);
+        opacity: 0.9;
+      }
+      75% { 
+        transform: translateY(-15px) scale(1.05) rotate(2deg);
+        opacity: 1;
+      }
+    }
+
+    .romanticSparkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, #fff 0%, #ffb6c1 50%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: sparkleTwinkle 3s ease-in-out infinite;
+    }
+
+    @keyframes sparkleTwinkle {
+      0%, 100% { 
+        transform: scale(0.5) rotate(0deg);
+        opacity: 0.3;
+      }
+      50% { 
+        transform: scale(1.2) rotate(180deg);
+        opacity: 1;
+      }
+    }
+
+    .kissEmoji {
+      position: absolute;
+      font-size: 32px;
+      pointer-events: none;
+      animation: kissFloat 5s ease-in-out infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes kissFloat {
+      0%, 100% { 
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+      }
+      50% { 
+        transform: translateY(-25px) scale(1.3);
+        opacity: 1;
+      }
+    }
+
+    .loveMessage {
+      position: absolute;
+      background: rgba(255, 182, 193, 0.9);
+      color: #8b0000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      pointer-events: none;
+      animation: messagePop 2s ease forwards;
+      box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes messagePop {
+      0% { 
+        opacity: 0;
+        transform: scale(0.5) translateY(20px);
+      }
+      20% { 
+        opacity: 1;
+        transform: scale(1.1) translateY(-5px);
+      }
+      80% { 
+        opacity: 1;
+        transform: scale(1) translateY(-10px);
+      }
+      100% { 
+        opacity: 0;
+        transform: scale(0.8) translateY(-30px);
+      }
+    }
+
+    .heartRain {
+      position: absolute;
+      top: -50px;
+      width: 20px;
+      height: 20px;
+      background: #ff69b4;
+      transform: rotate(45deg);
+      pointer-events: none;
+      animation: heartFall 6s linear infinite;
+    }
+
+    .heartRain::before,
+    .heartRain::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff69b4;
+      border-radius: 50%;
+    }
+
+    .heartRain::before { left: -10px; top: 0; }
+    .heartRain::after { top: -10px; left: 0; }
+
+    @keyframes heartFall {
+      0% { 
+        transform: translateY(0) rotate(45deg) scale(0.8);
+        opacity: 0;
+      }
+      10% { 
+        opacity: 1;
+      }
+      100% { 
+        transform: translateY(100vh) rotate(45deg) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    .loveGlow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255, 105, 180, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+      animation: glowPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { 
+        opacity: 0.3;
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 0.6;
+        transform: scale(1.1);
+      }
+    }
+
+    /* Scroll indicator */
+    .scrollIndicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #ff69b4;
+      padding: 12px 18px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1400;
+      animation: scrollBounce 2s ease-in-out infinite;
+      cursor: pointer;
+      user-select: none;
+      border: 2px solid rgba(255, 105, 180, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    @keyframes scrollBounce {
+      0%, 100% { 
+        transform: translateY(0);
+        opacity: 0.8;
+      }
+      50% { 
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+    }
+
+    .scrollIndicator:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Portrait mobile optimization - Step by step view */
+    @media screen and (max-width: 768px) and (orientation: portrait) {
+      /* Portrait-specific mobile fixes - One section at a time */
+      body {
+        height: 100vh !important;
+        width: 100vw !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        touch-action: manipulation !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+      }
+      
+      * {
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation !important;
+      }
+      
+      /* Hide all sections by default in portrait */
+      #intro, #counterScreen, #birthdayMessage, #cake, #scene3d, #finalMessage {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        z-index: 1 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.5s ease, visibility 0.5s ease !important;
+      }
+      
+      /* Show active section */
+      #intro.active, #counterScreen.active, #birthdayMessage.active, #cake.active, #scene3d.active, #finalMessage.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 10 !important;
+      }
+      
+      /* Intro section portrait optimization */
+      #intro {
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      
+      #intro h1 {
+        font-size: 1.8rem !important;
+        margin: 0 15px !important;
+        text-align: center !important;
+        line-height: 1.3 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        hyphens: auto !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      #intro .subtitle {
+        font-size: 1rem !important;
+        margin-top: 15px !important;
+        padding: 0 20px !important;
+        text-align: center !important;
+      }
+      
+      /* Countdown section portrait optimization */
+      #counterScreen {
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      
+      #countdown {
+        font-size: 2.5rem !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+      }
+      
+      #message {
+        font-size: 1.2rem !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+      }
+      
+      #secondProgress {
+        width: 90% !important;
+        margin: 0 auto !important;
+      }
+      
+      #hint {
+        font-size: 0.9rem !important;
+        text-align: center !important;
+        margin-top: 20px !important;
+      }
+      
+      /* Birthday message portrait optimization */
+      #birthdayMessage {
+        font-size: 2.5rem !important;
+        text-align: center !important;
+        padding: 0 20px !important;
+        line-height: 1.2 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      
+      /* Cake portrait optimization */
+      #cake {
+        margin-top: 40px !important;
+        width: 100px !important;
+        height: 70px !important;
+      }
+      
+      /* 3D scene portrait optimization */
+      #scene3d {
+        padding: 20px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
+      
+      .birthday3DText {
+        font-size: 1.5rem !important;
+        text-align: center !important;
+        line-height: 1.3 !important;
+        margin-bottom: 30px !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        hyphens: auto !important;
+        max-width: 100% !important;
+        padding: 0 15px !important;
+        box-sizing: border-box !important;
+      }
+      
+      .loveLetter3D {
+        width: 200px !important;
+        height: 250px !important;
+        margin-bottom: 30px !important;
+      }
+      
+      #openLetterCta {
+        font-size: 1rem !important;
+        padding: 12px 20px !important;
+        text-align: center !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        width: 90% !important;
+        max-width: 300px !important;
+        margin: 0 auto !important;
+        line-height: 1.3 !important;
+        display: block !important;
+        cursor: pointer !important;
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3) !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Final message portrait optimization */
+      #finalMessage {
+        padding: 10px !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+      }
+      
+      .letterContainer {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        box-sizing: border-box !important;
+      }
+      
+      .letterPaper {
+        padding: 20px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .letterContent {
+        font-size: 16px !important;
+        line-height: 1.6 !important;
+        text-align: left !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+      }
+      
+      .letterHeader {
+        text-align: center !important;
+        margin-bottom: 25px !important;
+      }
+      
+      .letterGreeting {
+        font-size: 1.8rem !important;
+        text-align: center !important;
+      }
+      
+      .letterDate {
+        font-size: 0.9rem !important;
+        text-align: center !important;
+      }
+      
+      .letterSignature {
+        font-size: 1.2rem !important;
+        text-align: right !important;
+        margin-top: 30px !important;
+      }
+      
+      /* Scroll indicator portrait optimization */
+      .scrollIndicator {
+        bottom: 10px !important;
+        right: 10px !important;
+        font-size: 0.8rem !important;
+        padding: 8px 12px !important;
+      }
+    }
+
+    /* Mobile-specific fixes to ensure desktop layout consistency */
+    @media screen and (max-width: 768px) {
+      /* Force same font sizes on mobile as desktop */
+      #intro h1 {
+        font-size: 3rem !important;
+      }
+      
+      #intro .subtitle {
+        font-size: 1.2rem !important;
+      }
+      
+      #countdown {
+        font-size: 3rem !important;
+      }
+      
+      #message {
+        font-size: 1.5rem !important;
+      }
+      
+      #birthdayMessage {
+        font-size: 3.5rem !important;
+      }
+      
+      .birthday3DText {
+        font-size: 56px !important;
+      }
+      
+      #openLetterCta {
+        font-size: 40px !important;
+      }
+      
+      /* Ensure same positioning and sizing */
+      .loveLetter3D {
+        width: 280px !important;
+        height: 350px !important;
+      }
+      
+      /* Prevent mobile zoom and touch issues */
+      body {
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Ensure consistent element behavior */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Fix any mobile-specific layout issues */
+      #counterScreen {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+      
+      #scene3d {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        perspective: 1200px !important;
+      }
+      
+      #finalMessage {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 20px !important;
+      }
+      
+      /* Love letter mobile optimizations */
+      .letterContainer {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 10px auto !important;
+        padding: 0 5px !important;
+        box-sizing: border-box !important;
+      }
+      
+      .letterPaper {
+        padding: 15px !important;
+        margin: 0 !important;
+        border-radius: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+      }
+      
+      .letterContent {
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+      }
+      
+      .letterHeader {
+        margin-bottom: 20px !important;
+        padding-bottom: 10px !important;
+      }
+      
+      .letterGreeting {
+        font-size: 24px !important;
+      }
+      
+      .letterDate {
+        font-size: 12px !important;
+      }
+      
+      .letterSignature {
+        font-size: 20px !important;
+        margin-top: 20px !important;
+      }
+      
+      /* Ensure emojis display properly on mobile */
+      .letterContent * {
+        font-size: inherit !important;
+        line-height: inherit !important;
+      }
+      
+      /* Fix button text truncation on mobile */
+      #openLetterCta {
+        font-size: 24px !important;
+        padding: 10px 15px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+        line-height: 1.2 !important;
+      }
+    }
+
+    /* Very small portrait screens optimization */
+    @media screen and (max-width: 480px) and (orientation: portrait) {
+      /* Ultra-compact portrait layout */
+      body {
+        height: 100vh !important;
+        width: 100vw !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+      }
+      
+      /* Intro ultra-compact */
+      #intro h1 {
+        font-size: 2rem !important;
+        margin: 0 5px !important;
+        line-height: 1.1 !important;
+      }
+      
+      #intro .subtitle {
+        font-size: 0.9rem !important;
+        margin-top: 10px !important;
+        padding: 0 10px !important;
+      }
+      
+      /* Countdown ultra-compact */
+      #countdown {
+        font-size: 2rem !important;
+        margin-bottom: 15px !important;
+      }
+      
+      #message {
+        font-size: 1rem !important;
+        margin-bottom: 15px !important;
+      }
+      
+      #secondProgress {
+        width: 95% !important;
+        height: 4px !important;
+      }
+      
+      #hint {
+        font-size: 0.8rem !important;
+        margin-top: 15px !important;
+      }
+      
+      /* Birthday message ultra-compact */
+      #birthdayMessage {
+        font-size: 2rem !important;
+        padding: 0 10px !important;
+        line-height: 1.1 !important;
+      }
+      
+      /* Cake ultra-compact */
+      #cake {
+        margin-top: 30px !important;
+        width: 80px !important;
+        height: 60px !important;
+      }
+      
+      /* 3D scene ultra-compact */
+      .birthday3DText {
+        font-size: 1.5rem !important;
+        margin-bottom: 20px !important;
+        line-height: 1.1 !important;
+      }
+      
+      .loveLetter3D {
+        width: 150px !important;
+        height: 200px !important;
+        margin-bottom: 20px !important;
+      }
+      
+      #openLetterCta {
+        font-size: 1rem !important;
+        padding: 12px 15px !important;
+        width: 95% !important;
+        max-width: 350px !important;
+        line-height: 1.2 !important;
+      }
+      
+      /* Final message ultra-compact */
+      #finalMessage {
+        padding: 5px !important;
+      }
+      
+      .letterContainer {
+        padding: 0 5px !important;
+      }
+      
+      .letterPaper {
+        padding: 15px !important;
+      }
+      
+      .letterContent {
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+      }
+      
+      .letterGreeting {
+        font-size: 1.5rem !important;
+      }
+      
+      .letterDate {
+        font-size: 0.8rem !important;
+      }
+      
+      .letterSignature {
+        font-size: 1rem !important;
+        margin-top: 20px !important;
+      }
+      
+      /* Scroll indicator ultra-compact */
+      .scrollIndicator {
+        bottom: 5px !important;
+        right: 5px !important;
+        font-size: 0.7rem !important;
+        padding: 6px 10px !important;
+      }
+    }
+
+    /* Additional mobile fixes for very small screens */
+    @media screen and (max-width: 480px) {
+      /* Scale down proportionally for very small screens while maintaining layout */
+      body {
+        transform: scale(0.8);
+        transform-origin: center center;
+        width: 125%;
+        height: 125%;
+        overflow: hidden;
+      }
+      
+      /* Ensure all elements maintain their desktop proportions */
+      #intro h1 {
+        font-size: 3rem !important;
+      }
+      
+      .birthday3DText {
+        font-size: 56px !important;
+      }
+      
+      #openLetterCta {
+        font-size: 40px !important;
+      }
+      
+      .loveLetter3D {
+        width: 280px !important;
+        height: 350px !important;
+      }
+      
+      /* Additional love letter optimizations for very small screens */
+      .letterContainer {
+        max-width: 100% !important;
+        width: 90% !important;
+        margin: 15px auto !important;
+        padding: 0 5px !important;
+      }
+      
+      .letterPaper {
+        padding: 15px !important;
+        margin: 0 !important;
+      }
+      
+      .letterContent {
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+      }
+      
+      .letterGreeting {
+        font-size: 20px !important;
+      }
+      
+      .letterDate {
+        font-size: 11px !important;
+      }
+      
+      .letterSignature {
+        font-size: 18px !important;
+        margin-top: 15px !important;
+      }
+      
+      /* Ensure proper scrolling on very small screens */
+      #finalMessage {
+        padding: 10px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      
+      /* Additional critical mobile fixes for text truncation */
+      .letterContainer {
+        width: 100% !important;
+        margin: 5px auto !important;
+        padding: 0 2px !important;
+        box-sizing: border-box !important;
+      }
+      
+      .letterPaper {
+        padding: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+      }
+      
+      .letterContent {
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: visible !important;
+      }
+      
+      #openLetterCta {
+        font-size: 14px !important;
+        padding: 5px 8px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+        line-height: 1.1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="intro">
+    <h1 class="typewriter">For the most beautiful girl 💖</h1>
+    <div class="subtitle">Every second brings me closer to celebrating you.</div>
+    <div class="hearts" aria-hidden="true">
+      <span class="heart" style="--x:10%; --speed:0.5s"></span>
+      <span class="heart" style="--x:22%; --speed:1.2s"></span>
+      <span class="heart" style="--x:35%; --speed:0.8s"></span>
+      <span class="heart" style="--x:48%; --speed:1.6s"></span>
+      <span class="heart" style="--x:60%; --speed:0.3s"></span>
+      <span class="heart" style="--x:72%; --speed:1.1s"></span>
+      <span class="heart" style="--x:84%; --speed:0.9s"></span>
+      <span class="heart" style="--x:92%; --speed:1.4s"></span>
+      <span class="sparkle" style="--sx:20%; --sy:30%; --delay:0.2s"></span>
+      <span class="sparkle" style="--sx:40%; --sy:20%; --delay:0.0s"></span>
+      <span class="sparkle" style="--sx:60%; --sy:25%; --delay:0.4s"></span>
+      <span class="sparkle" style="--sx:70%; --sy:35%; --delay:0.7s"></span>
+    </div>
+  </div>
+  <div id="counterScreen">
+    <div id="countdown"></div>
+    <div id="message"></div>
+    <div id="secondProgress"><span></span></div>
+    <div id="hint">Tap anywhere for surprises ✨</div>
+  </div>
+  <div id="birthdayMessage">🎉 Happy Birthday 🎂</div>
+
+  <div id="cake">
+    <div class="candle">
+      <div class="flame"></div>
+    </div>
+  </div>
+
+  <section id="scene3d" aria-live="polite">
+    <div class="sceneInner">
+      <div class="birthday3DText">For the most beautiful girl 💖</div>
+      <div class="loveLetter3D" aria-hidden="true">
+        <div class="letterEnvelope">
+          <div class="side1"></div>
+          <div class="side2"></div>
+        </div>
+        <div class="letterHeart">💖</div>
+        <!-- Floating particles -->
+        <div class="particle" style="left: 10%; top: 20%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 80%; top: 30%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 20%; top: 60%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 70%; top: 70%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; top: 10%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 30%; top: 80%; animation-delay: 5s;"></div>
+      </div>
+      <button id="openLetterCta" aria-label="Tap to open your love letter" tabindex="0">💌 OPEN YOUR LOVE LETTER 💌</button>
+    </div>
+  </section>
+
+  <section id="finalMessage" role="dialog" aria-modal="true" aria-label="A love letter for a beautiful friend">
+    <div class="loveGlow"></div>
+    <div class="scrollIndicator">📜 Scroll to read more 💕</div>
+    <div class="letterContainer">
+      <div class="letterPaper">
+        <div class="letterLines"></div>
+        <div class="letterHearts">💕</div>
+        
+        <div class="letterHeader">
+          <div class="letterDate">November 22nd, 2025</div>
+          <div class="letterGreeting">My Dearest Love</div>
+        </div>
+        
+        <div class="letterContent">
+          Happy Birthday to the most precious soul in my life, my today, my tomorrow, and my forever. 💖✨<br><br>
+          
+          On this special day, I just want to remind you how deeply I love you 💕 and how grateful I am to walk this journey of life with you. You are not just my girlfriend, you are my safe place 🏠, my biggest blessing 🙏, and the woman I want to call my wife one day 💍.<br><br>
+          
+          Every smile of yours lights up my world , every word of yours melts my heart 💗, and every dream of yours becomes my mission . With you, love feels pure 💝, life feels meaningful 🌈, and the future feels brighter than ever ✨.<br><br>
+          
+          May this birthday bring you endless happiness, laughter that never fades, and dreams that turn into beautiful realities . I promise to stand by you through every high and low , to love you more with each passing day 💖, and to build a life together that's as magical as the love we share 🪄💕.<br><br>
+          
+          <strong>My Promise to You: 💍</strong><br>
+          I promise to be your biggest supporter, your shoulder to cry on , and your partner in all adventures. I promise to make you laugh every day , to hold your hand through every storm , and to celebrate every victory together 🏆💕.<br><br>
+          
+          <strong>What I Love About You: 💖</strong><br>
+          • Your beautiful heart that cares for everyone around you 💝<br>
+          • Your infectious laugh that brightens even the darkest days✨ <br>
+          • Your strength and determination that inspires me daily 💪✨<br>
+          • Your kindness that makes the world a better place 🌍💕<br>
+          • Your dreams and ambitions that I'm honored to support 🌟🙏<br><br>
+          
+          <strong>Our Future Together: 🚀</strong><br>
+          I can't wait to create countless memories with you 📸, to travel the world hand in hand ✈️🌍, to build a home filled with love and laughter 🏡💕, and to grow old together watching sunsets and making new dreams 🌅💭.<br><br>
+          
+          <strong>Birthday Wishes: 🎂✨</strong><br>
+          May this new year of your life bring you closer to all your dreams 🌟. May you always know how loved and cherished you are 💖. May every day be filled with joy 😊, peace 🕊️, and the knowledge that you are the most amazing person I've ever known 🌟💕.<br><br>
+          
+          <div class="letterSignature">
+            Forever yours, 💕<br>
+            Your devoted love 💍❤️💖💝💗
+          </div>
+        </div>
+        
+        <div class="letterSeal">💌</div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Portrait mobile step-by-step functionality
+    function isPortraitMobile() {
+      return window.innerWidth <= 768 && window.matchMedia('(orientation: portrait)').matches;
+    }
+    
+    function showSection(sectionId) {
+      if (!isPortraitMobile()) return;
+      
+      // Hide all sections
+      const sections = ['intro', 'counterScreen', 'birthdayMessage', 'cake', 'scene3d', 'finalMessage'];
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) {
+          section.classList.remove('active');
+        }
+      });
+      
+      // Show the specified section
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+    }
+    
+    function hideAllSections() {
+      if (!isPortraitMobile()) return;
+      
+      const sections = ['intro', 'counterScreen', 'birthdayMessage', 'cake', 'scene3d', 'finalMessage'];
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) {
+          section.classList.remove('active');
+        }
+      });
+    }
+    
+    // Check if timer is already over
+    let countdownDate = new Date("Oct 22, 2025 00:00:00").getTime();
+    let now = new Date().getTime();
+    let distance = countdownDate - now;
+    
+    // If timer is already over, skip intro and go directly to birthday celebration
+    if (distance <= 0) {
+      // Hide intro immediately
+    const intro = document.getElementById("intro");
+      if (intro) {
+        if (isPortraitMobile()) {
+          intro.classList.remove('active');
+        } else {
+          intro.style.display = 'none';
+          intro.style.opacity = '0';
+        }
+      }
+      
+      // Hide countdown screen
+    const counterScreen = document.getElementById("counterScreen");
+      if (counterScreen) {
+        if (isPortraitMobile()) {
+          counterScreen.classList.remove('active');
+        } else {
+          counterScreen.style.display = 'none';
+        }
+      }
+      
+      // Clear all background elements
+      function clearAllBackgroundElements() {
+        const hearts = document.querySelectorAll('.heart, .sparkle');
+        hearts.forEach(el => el.remove());
+        
+        const balloons = document.querySelectorAll('.balloon');
+        balloons.forEach(el => el.remove());
+        
+        const confetti = document.querySelectorAll('.confetti');
+        confetti.forEach(el => el.remove());
+        
+        const popHearts = document.querySelectorAll('.popHeart');
+        popHearts.forEach(el => el.remove());
+        
+        const progressBar = document.getElementById('secondProgress');
+        if (progressBar) {
+          progressBar.style.display = 'none';
+          progressBar.style.opacity = '0';
+          progressBar.remove();
+        }
+        
+        const progressSpans = document.querySelectorAll('#secondProgress span');
+        progressSpans.forEach(span => span.remove());
+        
+        if (intro) {
+          intro.style.display = 'none';
+          intro.style.opacity = '0';
+        }
+      }
+      
+      // Clear background elements
+      clearAllBackgroundElements();
+      
+      // Show birthday message and cake immediately
+      const birthdayMsg = document.getElementById("birthdayMessage");
+      const cake = document.getElementById("cake");
+      
+      if (birthdayMsg && cake) {
+        if (isPortraitMobile()) {
+          showSection('birthdayMessage');
+        } else {
+          birthdayMsg.style.display = "block";
+          birthdayMsg.style.opacity = "1";
+          birthdayMsg.style.animation = "bounceIn 2s ease forwards, glow 2s infinite alternate";
+          
+          cake.style.display = "block";
+          cake.style.opacity = "1";
+          cake.style.animation = "fadeInUp 1s ease forwards";
+        }
+        
+        // After birthday text shows, split into letters and fly each with a balloon
+        setTimeout(() => {
+          const msgEl = document.getElementById('birthdayMessage');
+          const original = msgEl.textContent;
+          const colors = ['#ff8a80','#ffd180','#b388ff','#80d8ff','#a5d6a7','#ff80ab'];
+          const letters = original.split('');
+          msgEl.innerHTML = '';
+          const wrap = document.createElement('span');
+          wrap.className = 'liftContainer';
+          msgEl.appendChild(wrap);
+          letters.forEach((ch, idx) => {
+            const lw = document.createElement('span');
+            lw.className = 'letterWrap';
+            const balloon = document.createElement('span');
+            balloon.className = 'carryBalloon';
+            balloon.style.setProperty('--c', colors[idx % colors.length]);
+            lw.appendChild(balloon);
+            const l = document.createElement('span');
+            l.className = 'letter';
+            l.textContent = ch;
+            lw.appendChild(l);
+            wrap.appendChild(lw);
+
+            // Staggered fly up
+            setTimeout(() => {
+              lw.style.setProperty('--dx', (Math.random()*40-20) + 'px');
+              lw.style.setProperty('--dur', (1.4 + Math.random()*0.8) + 's');
+              lw.classList.add('flyUp');
+            }, 200 + idx * 80);
+          });
+
+          // When letters done flying, hide the whole message to clear space
+          setTimeout(() => {
+            msgEl.style.display = 'none';
+          }, 200 + letters.length * 80 + 1600);
+
+          // Spawn a few balloons near the cake
+          const cakeRect = cake.getBoundingClientRect();
+          for (let i=0;i<8;i++) {
+            setTimeout(() => {
+              const b = document.createElement('div');
+              b.className = 'balloon';
+              b.style.setProperty('--c', colors[i % colors.length]);
+              b.style.left = (cakeRect.left + cakeRect.width/2 + (Math.random()*80-40)) + 'px';
+              b.style.bottom = '0px';
+              b.style.setProperty('--w', (20 + Math.random()*24) + 'px');
+              b.style.setProperty('--dur', (7 + Math.random()*6) + 's');
+              b.style.setProperty('--drift', (Math.random()*60-30)+'px');
+              b.style.position = 'fixed';
+              document.body.appendChild(b);
+              setTimeout(()=>b.remove(), 12000);
+            }, i*200);
+          }
+        }, 1200);
+
+        // Blow candle after 3 sec
+        setTimeout(() => {
+          const flame = document.querySelector(".flame");
+          if (flame) flame.classList.add("blowOut");
+        }, 3000);
+
+        // After candle blow, fade out birthday message and show 3D scene
+        setTimeout(() => {
+          const birthdayMsg = document.getElementById("birthdayMessage");
+          const cake = document.getElementById("cake");
+          
+          if (birthdayMsg && cake) {
+            birthdayMsg.style.animation = "none";
+            cake.style.animation = "none";
+            
+            birthdayMsg.offsetHeight;
+            cake.offsetHeight;
+            
+            birthdayMsg.style.animation = "fadeOut 1000ms ease forwards";
+            cake.style.animation = "fadeOut 1000ms ease forwards";
+            
+            setTimeout(() => {
+              birthdayMsg.style.display = "none";
+              cake.style.display = "none";
+              
+              const scene3d = document.getElementById("scene3d");
+              if (scene3d) {
+                if (isPortraitMobile()) {
+                  showSection('scene3d');
+                } else {
+                  scene3d.style.animation = "none";
+                  scene3d.style.opacity = "0";
+                  scene3d.style.display = "flex";
+                  
+                  scene3d.offsetHeight;
+                  scene3d.style.animation = "sceneFadeIn 1.2s ease forwards";
+                }
+                
+                setTimeout(() => {
+                  const cta = document.getElementById("openLetterCta");
+                  if (cta) {
+                    cta.style.display = "inline-block";
+                    cta.style.opacity = "0";
+                    cta.style.visibility = "visible";
+                    cta.style.transform = "translateZ(10px) scale(0.8)";
+                    
+                    cta.offsetHeight;
+                    cta.style.transition = "opacity 600ms ease, transform 600ms ease";
+                    cta.style.opacity = "1";
+                    cta.style.transform = "translateZ(10px) scale(1)";
+                    cta.focus();
+                  }
+                }, 1300);
+              }
+            }, 1000);
+          }
+        }, 4200);
+
+        // Confetti
+        for (let i = 0; i < 120; i++) {
+          let confetti = document.createElement("div");
+          confetti.className = "confetti";
+          confetti.style.left = Math.random() * window.innerWidth + "px";
+          confetti.style.backgroundColor = "hsl(" + Math.random() * 360 + ", 100%, 50%)";
+          confetti.style.animationDuration = (Math.random() * 3 + 2) + "s";
+          confetti.style.width = confetti.style.height = Math.random() * 10 + 5 + "px";
+          document.body.appendChild(confetti);
+          setTimeout(() => { confetti.remove(); }, 5000);
+        }
+      }
+      
+      // Initialize love letter functionality for expired timer scenario
+      setTimeout(() => {
+        initializeLoveLetterFunctionality();
+      }, 5000); // Wait for 3D scene to appear
+    } else {
+      // Timer is not over, proceed with normal intro and countdown
+      const intro = document.getElementById("intro");
+      if (intro) {
+        if (isPortraitMobile()) {
+          showSection('intro');
+        } else {
+          intro.style.display = 'flex';
+          intro.style.opacity = '1';
+        }
+      }
+
+    const countdownEl = document.getElementById("countdown");
+    const messageEl = document.getElementById("message");
+    const counterScreen = document.getElementById("counterScreen");
+    const progressBar = document.querySelector('#secondProgress span');
+    const secondProgress = document.getElementById('secondProgress');
+
+    setTimeout(() => {
+      // Only fade out the intro text, keep background elements
+      const introText = intro.querySelector('h1');
+      const introSubtitle = intro.querySelector('.subtitle');
+      
+      if (introText) introText.style.animation = 'fadeOut 800ms ease forwards';
+      if (introSubtitle) introSubtitle.style.animation = 'fadeOut 800ms ease forwards';
+      
+      setTimeout(() => {
+        // Hide intro text elements but keep the container for background
+        if (introText) introText.style.display = 'none';
+        if (introSubtitle) introSubtitle.style.display = 'none';
+        
+        // Reset countdown elements animation state
+        countdownEl.style.opacity = '0';
+        messageEl.style.opacity = '0';
+        secondProgress.style.opacity = '0';
+        
+        // Show countdown screen
+          if (isPortraitMobile()) {
+            showSection('counterScreen');
+          } else {
+        counterScreen.style.display = 'flex';
+        countdownEl.style.display = 'block';
+        messageEl.style.display = 'block';
+        secondProgress.style.display = 'block';
+          }
+        
+        // Force reflow
+        countdownEl.offsetHeight;
+        messageEl.offsetHeight;
+        secondProgress.offsetHeight;
+        
+        // Animate countdown elements in
+        countdownEl.style.transition = 'opacity 800ms ease, transform 800ms ease';
+        messageEl.style.transition = 'opacity 800ms ease, transform 800ms ease';
+        secondProgress.style.transition = 'opacity 800ms ease, transform 800ms ease';
+        
+        countdownEl.style.opacity = '1';
+        countdownEl.style.transform = 'translateY(0)';
+        messageEl.style.opacity = '1';
+        messageEl.style.transform = 'translateY(0)';
+        secondProgress.style.opacity = '1';
+        secondProgress.style.transform = 'translateY(0)';
+      }, 800);
+      }, 3500); // 0.5s delay + 3s typing + small buffer
+    }
+
+    const hints = [
+      "Make a wish ready? 🌟",
+      "Smile! It suits you so well 😊",
+      "Tap to send a tiny heart 💗",
+      "Close your eyes, think of a dream ✨",
+      "Counting down to your magic moment ⏳"
+    ];
+
+    let hintIndex = 0;
+
+    function setHint() {
+      const hint = document.getElementById('hint');
+      if (hint) hint.textContent = hints[hintIndex++ % hints.length];
+    }
+
+    setHint();
+
+    // Function to clear all background elements
+    function clearAllBackgroundElements() {
+      // Remove all hearts and sparkles from intro
+      const hearts = document.querySelectorAll('.heart, .sparkle');
+      hearts.forEach(el => el.remove());
+      
+      // Remove all balloons
+      const balloons = document.querySelectorAll('.balloon');
+      balloons.forEach(el => el.remove());
+      
+      // Remove all confetti
+      const confetti = document.querySelectorAll('.confetti');
+      confetti.forEach(el => el.remove());
+      
+      // Remove all floating hearts from taps
+      const popHearts = document.querySelectorAll('.popHeart');
+      popHearts.forEach(el => el.remove());
+      
+      // Remove progress bar completely
+      const progressBar = document.getElementById('secondProgress');
+      if (progressBar) {
+        progressBar.style.display = 'none';
+        progressBar.style.opacity = '0';
+        progressBar.remove();
+      }
+      
+      // Also remove any progress bar spans
+      const progressSpans = document.querySelectorAll('#secondProgress span');
+      progressSpans.forEach(span => span.remove());
+      
+      // Hide the intro container completely
+      const intro = document.getElementById('intro');
+      if (intro) {
+        intro.style.display = 'none';
+        intro.style.opacity = '0';
+      }
+    }
+
+    // Only start timer if countdown is not over
+    let timer;
+    if (distance > 0) {
+      timer = setInterval(function() {
+      let now = new Date().getTime();
+      let distance = countdownDate - now;
+
+      // If date is in the past, immediately trigger celebration
+      if (distance <= 0) {
+        clearInterval(timer);
+        
+        // Fade out countdown screen elements
+        const countdownEl = document.getElementById("countdown");
+        const messageEl = document.getElementById("message");
+        const counterScreen = document.getElementById('counterScreen');
+        
+        countdownEl.style.transition = 'opacity 600ms ease, transform 600ms ease';
+        messageEl.style.transition = 'opacity 600ms ease, transform 600ms ease';
+        secondProgress.style.transition = 'opacity 600ms ease, transform 600ms ease';
+        
+        countdownEl.style.opacity = '0';
+        countdownEl.style.transform = 'translateY(-20px)';
+        messageEl.style.opacity = '0';
+        messageEl.style.transform = 'translateY(-20px)';
+        secondProgress.style.opacity = '0';
+        secondProgress.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+          // Hide countdown screen completely
+          counterScreen.style.display = 'none';
+          countdownEl.style.display = "none";
+          messageEl.style.display = "none";
+          secondProgress.style.display = 'none';
+          
+          // Reset birthday message and cake animation state
+          const birthdayMsg = document.getElementById("birthdayMessage");
+          const cake = document.getElementById("cake");
+          
+          birthdayMsg.style.animation = "none";
+          cake.style.animation = "none";
+          birthdayMsg.style.opacity = "0";
+          cake.style.opacity = "0";
+          
+          // Show birthday elements
+          birthdayMsg.style.display = "block";
+          cake.style.display = "block";
+          
+          // Force reflow
+          birthdayMsg.offsetHeight;
+          cake.offsetHeight;
+          
+          // Clear all background elements when birthday message appears
+          clearAllBackgroundElements();
+          
+          // Animate birthday elements in
+          birthdayMsg.style.animation = "bounceIn 2s ease forwards, glow 2s infinite alternate";
+          cake.style.animation = "fadeInUp 1s ease forwards";
+
+          // After birthday text shows, split into letters and fly each with a balloon
+          setTimeout(() => {
+            // Remove hint text when letters start flying
+            const hint = document.getElementById('hint');
+            if (hint) {
+              hint.style.display = 'none';
+              hint.remove();
+            }
+            
+            const msgEl = document.getElementById('birthdayMessage');
+            const original = msgEl.textContent;
+            const colors = ['#ff8a80','#ffd180','#b388ff','#80d8ff','#a5d6a7','#ff80ab'];
+            const letters = original.split('');
+            msgEl.innerHTML = '';
+            const wrap = document.createElement('span');
+            wrap.className = 'liftContainer';
+            msgEl.appendChild(wrap);
+            letters.forEach((ch, idx) => {
+              const lw = document.createElement('span');
+              lw.className = 'letterWrap';
+              const balloon = document.createElement('span');
+              balloon.className = 'carryBalloon';
+              balloon.style.setProperty('--c', colors[idx % colors.length]);
+              lw.appendChild(balloon);
+              const l = document.createElement('span');
+              l.className = 'letter';
+              l.textContent = ch;
+              lw.appendChild(l);
+              wrap.appendChild(lw);
+
+              // Staggered fly up
+              setTimeout(() => {
+                lw.style.setProperty('--dx', (Math.random()*40-20) + 'px');
+                lw.style.setProperty('--dur', (1.4 + Math.random()*0.8) + 's');
+                lw.classList.add('flyUp');
+              }, 200 + idx * 80);
+            });
+
+            // When letters done flying, hide the whole message to clear space
+            setTimeout(() => {
+              msgEl.style.display = 'none';
+            }, 200 + letters.length * 80 + 1600);
+
+            // Spawn a few balloons near the cake
+            const cakeRect = cake.getBoundingClientRect();
+            for (let i=0;i<8;i++) {
+              setTimeout(() => {
+                const b = document.createElement('div');
+                b.className = 'balloon';
+                b.style.setProperty('--c', colors[i % colors.length]);
+                b.style.left = (cakeRect.left + cakeRect.width/2 + (Math.random()*80-40)) + 'px';
+                b.style.bottom = '0px';
+                b.style.setProperty('--w', (20 + Math.random()*24) + 'px');
+                b.style.setProperty('--dur', (7 + Math.random()*6) + 's');
+                b.style.setProperty('--drift', (Math.random()*60-30)+'px');
+                b.style.position = 'fixed';
+                document.body.appendChild(b);
+                setTimeout(()=>b.remove(), 12000);
+              }, i*200);
+            }
+          }, 1200); // after bounceIn begins
+        }, 600); // Wait for fade out to complete
+
+        // Blow candle after 3 sec
+        setTimeout(() => {
+          document.querySelector(".flame").classList.add("blowOut");
+        }, 3000);
+
+        // After candle blow, fade out birthday message and show 3D scene
+        setTimeout(() => {
+          // Fade out birthday message and cake completely
+          const birthdayMsg = document.getElementById("birthdayMessage");
+          const cake = document.getElementById("cake");
+          
+          // Reset any existing animations
+          birthdayMsg.style.animation = "none";
+          cake.style.animation = "none";
+          
+          // Force reflow
+          birthdayMsg.offsetHeight;
+          cake.offsetHeight;
+          
+          // Apply fade out animations
+          birthdayMsg.style.animation = "fadeOut 1000ms ease forwards";
+          cake.style.animation = "fadeOut 1000ms ease forwards";
+          
+          // Wait for fade out to complete, then hide elements and show 3D scene
+          setTimeout(() => {
+            birthdayMsg.style.display = "none";
+            cake.style.display = "none";
+            
+            // Reset 3D scene animation state
+            const scene3d = document.getElementById("scene3d");
+            if (isPortraitMobile()) {
+              showSection('scene3d');
+            } else {
+            scene3d.style.animation = "none";
+            scene3d.style.opacity = "0";
+            scene3d.style.display = "flex";
+            
+            // Force reflow
+            scene3d.offsetHeight;
+            
+            // Apply fade in animation
+            scene3d.style.animation = "sceneFadeIn 1.2s ease forwards";
+            }
+            
+            // Show CTA after scene animation completes
+            setTimeout(() => {
+              const cta = document.getElementById("openLetterCta");
+              if (cta) {
+                console.log('Showing love letter button...');
+                cta.style.display = "inline-block";
+                cta.style.opacity = "0";
+                cta.style.visibility = "visible";
+                cta.style.transform = "translateZ(10px) scale(0.8)";
+                
+                // Force reflow
+                cta.offsetHeight;
+                
+                // Animate CTA in
+                cta.style.transition = "opacity 600ms ease, transform 600ms ease";
+                cta.style.opacity = "1";
+                cta.style.transform = "translateZ(10px) scale(1)";
+                cta.focus();
+                console.log('Love letter button should now be visible');
+              } else {
+                console.error('Love letter button not found!');
+              }
+            }, 1300); // Wait for sceneFadeIn animation (1.2s) + small buffer
+          }, 1000); // Wait for fade out to complete
+        }, 4200); // 3s candle blow + 1.2s delay
+
+        // Confetti
+        for (let i = 0; i < 120; i++) {
+          let confetti = document.createElement("div");
+          confetti.className = "confetti";
+          confetti.style.left = Math.random() * window.innerWidth + "px";
+          confetti.style.backgroundColor =
+            "hsl(" + Math.random() * 360 + ", 100%, 50%)";
+          confetti.style.animationDuration = (Math.random() * 3 + 2) + "s";
+          confetti.style.width = confetti.style.height = Math.random() * 10 + 5 + "px";
+          document.body.appendChild(confetti);
+
+          setTimeout(() => { confetti.remove(); }, 5000);
+        }
+        return; // Exit early for past dates
+      }
+
+      // Normal countdown display for future dates
+      let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById("countdown").innerHTML =
+        days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+      // Relevant messages
+      let msg = "";
+      if (days > 1) msg = "Get Ready... 🎉";
+      else if (days === 1) msg = "Only 1 day left... 🎂";
+      else if (hours > 0) msg = "Just " + hours + " hours to go! ⏳";
+      else if (minutes > 0) msg = "Almost there... ⏰";
+      else if (seconds > 10) msg = "Counting down... 🔥";
+      else msg = "🎂 Light the candles...";
+
+      document.getElementById("message").innerHTML = msg;
+      const pct = 100 - Math.floor((distance % 1000) / 10);
+      progressBar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+
+      // When countdown reaches zero, clear background and show birthday message
+      if (distance < 0) {
+        clearInterval(timer);
+        
+        // Clear all background elements
+        clearAllBackgroundElements();
+        
+        // Fade out countdown screen elements
+        const countdownEl = document.getElementById("countdown");
+        const messageEl = document.getElementById("message");
+        const counterScreen = document.getElementById('counterScreen');
+        
+        countdownEl.style.transition = 'opacity 600ms ease, transform 600ms ease';
+        messageEl.style.transition = 'opacity 600ms ease, transform 600ms ease';
+        secondProgress.style.transition = 'opacity 600ms ease, transform 600ms ease';
+        
+        countdownEl.style.opacity = '0';
+        countdownEl.style.transform = 'translateY(-20px)';
+        messageEl.style.opacity = '0';
+        messageEl.style.transform = 'translateY(-20px)';
+        secondProgress.style.opacity = '0';
+        secondProgress.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+          // Hide countdown screen completely
+          counterScreen.style.display = 'none';
+          countdownEl.style.display = "none";
+          messageEl.style.display = "none";
+          secondProgress.style.display = 'none';
+          
+          // Reset birthday message and cake animation state
+          const birthdayMsg = document.getElementById("birthdayMessage");
+          const cake = document.getElementById("cake");
+          
+          birthdayMsg.style.animation = "none";
+          cake.style.animation = "none";
+          birthdayMsg.style.opacity = "0";
+          cake.style.opacity = "0";
+          
+          // Show birthday elements
+          if (isPortraitMobile()) {
+            showSection('birthdayMessage');
+          } else {
+          birthdayMsg.style.display = "block";
+          cake.style.display = "block";
+          
+          // Force reflow
+          birthdayMsg.offsetHeight;
+          cake.offsetHeight;
+          
+          // Animate birthday elements in
+          birthdayMsg.style.animation = "bounceIn 2s ease forwards, glow 2s infinite alternate";
+          cake.style.animation = "fadeInUp 1s ease forwards";
+          }
+
+          // After birthday text shows, split into letters and fly each with a balloon
+          setTimeout(() => {
+            // Remove hint text when letters start flying
+            const hint = document.getElementById('hint');
+            if (hint) {
+              hint.style.display = 'none';
+              hint.remove();
+            }
+            
+            const msgEl = document.getElementById('birthdayMessage');
+            const original = msgEl.textContent;
+            const colors = ['#ff8a80','#ffd180','#b388ff','#80d8ff','#a5d6a7','#ff80ab'];
+            const letters = original.split('');
+            msgEl.innerHTML = '';
+            const wrap = document.createElement('span');
+            wrap.className = 'liftContainer';
+            msgEl.appendChild(wrap);
+            letters.forEach((ch, idx) => {
+              const lw = document.createElement('span');
+              lw.className = 'letterWrap';
+              const balloon = document.createElement('span');
+              balloon.className = 'carryBalloon';
+              balloon.style.setProperty('--c', colors[idx % colors.length]);
+              lw.appendChild(balloon);
+              const l = document.createElement('span');
+              l.className = 'letter';
+              l.textContent = ch;
+              lw.appendChild(l);
+              wrap.appendChild(lw);
+
+              // Staggered fly up
+              setTimeout(() => {
+                lw.style.setProperty('--dx', (Math.random()*40-20) + 'px');
+                lw.style.setProperty('--dur', (1.4 + Math.random()*0.8) + 's');
+                lw.classList.add('flyUp');
+              }, 200 + idx * 80);
+            });
+
+            // When letters done flying, hide the whole message to clear space
+            setTimeout(() => {
+              msgEl.style.display = 'none';
+            }, 200 + letters.length * 80 + 1600);
+
+            // Spawn a few balloons near the cake
+            const cakeRect = cake.getBoundingClientRect();
+            for (let i=0;i<8;i++) {
+              setTimeout(() => {
+                const b = document.createElement('div');
+                b.className = 'balloon';
+                b.style.setProperty('--c', colors[i % colors.length]);
+                b.style.left = (cakeRect.left + cakeRect.width/2 + (Math.random()*80-40)) + 'px';
+                b.style.bottom = '0px';
+                b.style.setProperty('--w', (20 + Math.random()*24) + 'px');
+                b.style.setProperty('--dur', (7 + Math.random()*6) + 's');
+                b.style.setProperty('--drift', (Math.random()*60-30)+'px');
+                b.style.position = 'fixed';
+                document.body.appendChild(b);
+                setTimeout(()=>b.remove(), 12000);
+              }, i*200);
+            }
+          }, 1200); // after bounceIn begins
+        }, 600); // Wait for fade out to complete
+
+        // Blow candle after 3 sec
+        setTimeout(() => {
+          document.querySelector(".flame").classList.add("blowOut");
+        }, 3000);
+
+        // After candle blow, fade out birthday message and show 3D scene
+        setTimeout(() => {
+          // Fade out birthday message and cake completely
+          const birthdayMsg = document.getElementById("birthdayMessage");
+          const cake = document.getElementById("cake");
+          
+          // Reset any existing animations
+          birthdayMsg.style.animation = "none";
+          cake.style.animation = "none";
+          
+          // Force reflow
+          birthdayMsg.offsetHeight;
+          cake.offsetHeight;
+          
+          // Apply fade out animations
+          birthdayMsg.style.animation = "fadeOut 1000ms ease forwards";
+          cake.style.animation = "fadeOut 1000ms ease forwards";
+          
+          // Wait for fade out to complete, then hide elements and show 3D scene
+          setTimeout(() => {
+            birthdayMsg.style.display = "none";
+            cake.style.display = "none";
+            
+            // Reset 3D scene animation state
+            const scene3d = document.getElementById("scene3d");
+            if (isPortraitMobile()) {
+              showSection('scene3d');
+            } else {
+            scene3d.style.animation = "none";
+            scene3d.style.opacity = "0";
+            scene3d.style.display = "flex";
+            
+            // Force reflow
+            scene3d.offsetHeight;
+            
+            // Apply fade in animation
+            scene3d.style.animation = "sceneFadeIn 1.2s ease forwards";
+            }
+            
+            // Show CTA after scene animation completes
+            setTimeout(() => {
+              const cta = document.getElementById("openLetterCta");
+              if (cta) {
+                console.log('Showing love letter button...');
+                cta.style.display = "inline-block";
+                cta.style.opacity = "0";
+                cta.style.visibility = "visible";
+                cta.style.transform = "translateZ(10px) scale(0.8)";
+                
+                // Force reflow
+                cta.offsetHeight;
+                
+                // Animate CTA in
+                cta.style.transition = "opacity 600ms ease, transform 600ms ease";
+                cta.style.opacity = "1";
+                cta.style.transform = "translateZ(10px) scale(1)";
+                cta.focus();
+                console.log('Love letter button should now be visible');
+              } else {
+                console.error('Love letter button not found!');
+              }
+            }, 1300); // Wait for sceneFadeIn animation (1.2s) + small buffer
+          }, 1000); // Wait for fade out to complete
+        }, 4200); // 3s candle blow + 1.2s delay
+
+        // Confetti
+        for (let i = 0; i < 120; i++) {
+          let confetti = document.createElement("div");
+          confetti.className = "confetti";
+          confetti.style.left = Math.random() * window.innerWidth + "px";
+          confetti.style.backgroundColor =
+            "hsl(" + Math.random() * 360 + ", 100%, 50%)";
+          confetti.style.animationDuration = (Math.random() * 3 + 2) + "s";
+          confetti.style.width = confetti.style.height = Math.random() * 10 + 5 + "px";
+          document.body.appendChild(confetti);
+
+          setTimeout(() => { confetti.remove(); }, 5000);
+        }
+      }
+
+    }, 1000);
+    } // Close the timer condition
+
+    // Smooth progress animation per frame
+    (function animateProgress() {
+      const now = new Date().getTime();
+      const distance = countdownDate - now;
+      const pct = 100 - ((distance % 1000) / 10);
+      progressBar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+      requestAnimationFrame(animateProgress);
+    })();
+
+    // Spawn balloons in the background periodically
+    function spawnBalloon() {
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      const colors = ['#ff8a80', '#ffd180', '#b388ff', '#80d8ff', '#a5d6a7', '#ff80ab'];
+      b.style.setProperty('--c', colors[Math.floor(Math.random()*colors.length)]);
+      b.style.setProperty('--x', Math.random()*100 + '%');
+      b.style.setProperty('--w', (24 + Math.random()*36) + 'px');
+      b.style.setProperty('--dur', (9 + Math.random()*8) + 's');
+      b.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+      document.body.appendChild(b);
+      setTimeout(() => b.remove(), 18000);
+    }
+    setInterval(spawnBalloon, 1100);
+    for (let i=0;i<8;i++) setTimeout(spawnBalloon, i*300);
+
+    // Click/tap to pop hearts + rotate hints
+    function popHeart(x, y) {
+      const h = document.createElement('div');
+      h.className = 'popHeart';
+      h.textContent = ['💖','💘','💝','✨','🌟'][Math.floor(Math.random()*5)];
+      h.style.left = x + 'px';
+      h.style.top = y + 'px';
+      h.style.setProperty('--size', (16 + Math.random()*14) + 'px');
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1000);
+    }
+
+      // Handle both click and touch events for mobile compatibility
+      function handleInteraction(e) {
+      if (counterScreen.style.display !== 'flex') return;
+        const x = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const y = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        popHeart(x, y);
+      setHint();
+      }
+
+      document.addEventListener('click', handleInteraction);
+      document.addEventListener('touchstart', handleInteraction);
+      
+      // Initialize love letter functionality for normal timer scenario
+      setTimeout(() => {
+        initializeLoveLetterFunctionality();
+      }, 10000); // Wait for countdown to potentially finish
+
+    // Love letter functionality initialization
+    function initializeLoveLetterFunctionality() {
+      const openLetterBtn = document.getElementById('openLetterCta');
+      const scene3d = document.getElementById('scene3d');
+      const letterEnvelope = document.querySelector('.letterEnvelope');
+      
+      if (!openLetterBtn || !scene3d || !letterEnvelope) {
+        console.log('Love letter elements not ready yet, retrying...');
+        setTimeout(initializeLoveLetterFunctionality, 1000);
+        return;
+      }
+      
+      console.log('Initializing love letter functionality...');
+      
+      function openLetter() {
+        if (!scene3d || scene3d.style.display !== 'flex') return;
+        if (letterEnvelope && !letterEnvelope.classList.contains('opened')) {
+          console.log('Opening love letter...');
+          
+          // Disable button to prevent multiple clicks
+          openLetterBtn.style.pointerEvents = 'none';
+          openLetterBtn.style.opacity = '0.7';
+          
+          // Open the letter envelope
+          letterEnvelope.classList.add('opened');
+          
+          // Enhanced celebratory burst with better positioning
+          setTimeout(() => {
+            console.log('Creating confetti burst...');
+            for (let i = 0; i < 100; i++) {
+              const c = document.createElement('div');
+              c.className = 'confetti';
+              c.style.left = (window.innerWidth/2 + (Math.random()*200-100)) + 'px';
+              c.style.top = (window.innerHeight/2 + (Math.random()*100-50)) + 'px';
+              c.style.backgroundColor = 'hsl(' + Math.random()*360 + ',100%,60%)';
+              c.style.animationDuration = (Math.random()*2 + 1.8) + 's';
+              c.style.width = c.style.height = (Math.random()*10 + 6) + 'px';
+              c.style.zIndex = '1500';
+              document.body.appendChild(c);
+              setTimeout(()=>c.remove(), 4000);
+            }
+          }, 600); // Start confetti during envelope opening
+          
+          // Fade out 3D scene and reveal final message
+          setTimeout(() => {
+            console.log('Starting transition to final message...');
+            
+            // Reset scene animation
+            scene3d.style.animation = "none";
+            
+            // Force reflow
+            scene3d.offsetHeight;
+            
+            // Apply fade out animation
+            scene3d.style.animation = "fadeOut 1200ms ease forwards";
+            
+            setTimeout(() => {
+              console.log('Hiding 3D scene and showing final message...');
+              
+              // Hide 3D scene completely
+              if (isPortraitMobile()) {
+                scene3d.classList.remove('active');
+              } else {
+                scene3d.style.display = 'none';
+                scene3d.style.opacity = '0';
+              }
+              
+              // Clear all background elements when final message appears
+              function clearAllBackgroundElements() {
+                const hearts = document.querySelectorAll('.heart, .sparkle');
+                hearts.forEach(el => el.remove());
+                
+                const balloons = document.querySelectorAll('.balloon');
+                balloons.forEach(el => el.remove());
+                
+                const confetti = document.querySelectorAll('.confetti');
+                confetti.forEach(el => el.remove());
+                
+                const popHearts = document.querySelectorAll('.popHeart');
+                popHearts.forEach(el => el.remove());
+                
+                const progressBar = document.getElementById('secondProgress');
+                if (progressBar) {
+                  progressBar.style.display = 'none';
+                  progressBar.style.opacity = '0';
+                  progressBar.remove();
+                }
+                
+                const progressSpans = document.querySelectorAll('#secondProgress span');
+                progressSpans.forEach(span => span.remove());
+                
+                const intro = document.getElementById('intro');
+                if (intro) {
+                  intro.style.display = 'none';
+                  intro.style.opacity = '0';
+                }
+              }
+              
+              clearAllBackgroundElements();
+              
+              // Reset final message animation state
+              const fm = document.getElementById('finalMessage');
+              if (fm) {
+                console.log('Final message element found, showing...');
+                if (isPortraitMobile()) {
+                  showSection('finalMessage');
+                } else {
+                  fm.style.animation = "none";
+                  fm.style.opacity = "0";
+                  fm.style.display = 'flex';
+                  fm.style.visibility = 'visible';
+                  
+                  // Force reflow
+                  fm.offsetHeight;
+                
+                  // Apply fade in animation
+                  fm.style.animation = "messageFadeIn 1.5s ease forwards";
+                }
+                
+                // Make sure all letter content is visible
+                const letterPaper = fm.querySelector('.letterPaper');
+                const letterContent = fm.querySelector('.letterContent');
+                const letterHeader = fm.querySelector('.letterHeader');
+                
+                if (letterPaper) {
+                  letterPaper.style.opacity = '1';
+                  letterPaper.style.visibility = 'visible';
+                  console.log('Letter paper made visible');
+                }
+                
+                if (letterContent) {
+                  letterContent.style.opacity = '1';
+                  letterContent.style.visibility = 'visible';
+                  console.log('Letter content made visible');
+                }
+                
+                if (letterHeader) {
+                  letterHeader.style.opacity = '1';
+                  letterHeader.style.visibility = 'visible';
+                  console.log('Letter header made visible');
+                }
+                
+                // Start interactive love elements after message appears
+                setTimeout(() => {
+                  console.log('Starting interactive love elements...');
+                  startInteractiveLoveElements();
+                  setupScrollIndicator();
+                }, 1500);
+              } else {
+                console.error('Final message element not found!');
+              }
+            }, 1200); // Wait for fade out to complete
+          }, 1400); // Wait for envelope opening animation to complete
+        }
+      }
+      
+      // Remove existing event listeners to avoid duplicates
+      openLetterBtn.removeEventListener('click', openLetter);
+      openLetterBtn.removeEventListener('touchstart', openLetter);
+      
+      // Add event listeners
+      openLetterBtn.addEventListener('click', openLetter);
+      openLetterBtn.addEventListener('touchstart', openLetter);
+      openLetterBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openLetter();
+        }
+      });
+      
+      console.log('Love letter functionality initialized successfully!');
+    }
+
+    // Interactive love elements for final message
+    const openLetterBtn = document.getElementById('openLetterCta');
+    const scene3d = document.getElementById('scene3d');
+    const letterEnvelope = document.querySelector('.letterEnvelope');
+    
+    function openLetter() {
+      // Check if 3D scene is visible (either by display or by active class for mobile)
+      const isSceneVisible = scene3d && (
+        scene3d.style.display === 'flex' || 
+        (isPortraitMobile() && scene3d.classList.contains('active'))
+      );
+      
+      if (!isSceneVisible) return;
+      
+      if (letterEnvelope && !letterEnvelope.classList.contains('opened')) {
+        console.log('Opening love letter...');
+        
+        // Disable button to prevent multiple clicks
+        openLetterBtn.style.pointerEvents = 'none';
+        openLetterBtn.style.opacity = '0.7';
+        
+        // Open the letter envelope
+        letterEnvelope.classList.add('opened');
+        
+        // Enhanced celebratory burst with better positioning
+        setTimeout(() => {
+          console.log('Creating confetti burst...');
+          for (let i = 0; i < 100; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.left = (window.innerWidth/2 + (Math.random()*200-100)) + 'px';
+            c.style.top = (window.innerHeight/2 + (Math.random()*100-50)) + 'px';
+            c.style.backgroundColor = 'hsl(' + Math.random()*360 + ',100%,60%)';
+            c.style.animationDuration = (Math.random()*2 + 1.8) + 's';
+            c.style.width = c.style.height = (Math.random()*10 + 6) + 'px';
+            c.style.zIndex = '1500';
+            document.body.appendChild(c);
+            setTimeout(()=>c.remove(), 4000);
+          }
+        }, 600); // Start confetti during envelope opening
+        
+        // Fade out 3D scene and reveal final message
+        setTimeout(() => {
+          console.log('Starting transition to final message...');
+          
+          // Reset scene animation
+          scene3d.style.animation = "none";
+          
+          // Force reflow
+          scene3d.offsetHeight;
+          
+          // Apply fade out animation
+          scene3d.style.animation = "fadeOut 1200ms ease forwards";
+          
+          setTimeout(() => {
+            console.log('Hiding 3D scene and showing final message...');
+            
+            // Hide 3D scene completely
+            scene3d.style.display = 'none';
+            scene3d.style.opacity = '0';
+            
+            // Clear all background elements when final message appears
+            clearAllBackgroundElements();
+            
+            // Reset final message animation state
+            const fm = document.getElementById('finalMessage');
+            if (fm) {
+              console.log('Final message element found, showing...');
+                if (isPortraitMobile()) {
+                  showSection('finalMessage');
+                } else {
+            fm.style.animation = "none";
+            fm.style.opacity = "0";
+            fm.style.display = 'flex';
+              fm.style.visibility = 'visible';
+            
+            // Force reflow
+            fm.offsetHeight;
+            
+            // Apply fade in animation
+            fm.style.animation = "messageFadeIn 1.5s ease forwards";
+                }
+              
+              // Make sure all letter content is visible
+              const letterPaper = fm.querySelector('.letterPaper');
+              const letterContent = fm.querySelector('.letterContent');
+              const letterHeader = fm.querySelector('.letterHeader');
+              
+              if (letterPaper) {
+                letterPaper.style.opacity = '1';
+                letterPaper.style.visibility = 'visible';
+                console.log('Letter paper made visible');
+              }
+              
+              if (letterContent) {
+                letterContent.style.opacity = '1';
+                letterContent.style.visibility = 'visible';
+                console.log('Letter content made visible');
+              }
+              
+              if (letterHeader) {
+                letterHeader.style.opacity = '1';
+                letterHeader.style.visibility = 'visible';
+                console.log('Letter header made visible');
+              }
+              
+              // Start interactive love elements after message appears
+              setTimeout(() => {
+                console.log('Starting interactive love elements...');
+                startInteractiveLoveElements();
+                setupScrollIndicator();
+              }, 1500);
+            } else {
+              console.error('Final message element not found!');
+            }
+          }, 1200); // Wait for fade out to complete
+        }, 1400); // Wait for envelope opening animation to complete
+      }
+    }
+    if (openLetterBtn) {
+      openLetterBtn.addEventListener('click', openLetter);
+      openLetterBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openLetter();
+        }
+      });
+    }
+
+    // Interactive love elements for final message
+    function startInteractiveLoveElements() {
+      const finalMessage = document.getElementById('finalMessage');
+      if (!finalMessage || finalMessage.style.display !== 'flex') return;
+
+      // Create floating love hearts around the letter
+      function createLoveHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'loveHeart';
+        heart.textContent = ['💖', '💕', '💗', '💘', '💝', '💞'][Math.floor(Math.random() * 6)];
+        heart.style.left = Math.random() * window.innerWidth + 'px';
+        heart.style.top = Math.random() * window.innerHeight + 'px';
+        heart.style.animationDelay = Math.random() * 2 + 's';
+        finalMessage.appendChild(heart);
+        
+        setTimeout(() => heart.remove(), 4000);
+      }
+
+      // Create romantic sparkles
+      function createSparkle() {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'romanticSparkle';
+        sparkle.style.left = Math.random() * window.innerWidth + 'px';
+        sparkle.style.top = Math.random() * window.innerHeight + 'px';
+        sparkle.style.animationDelay = Math.random() * 3 + 's';
+        finalMessage.appendChild(sparkle);
+        
+        setTimeout(() => sparkle.remove(), 3000);
+      }
+
+      // Create floating kisses
+      function createKiss() {
+        const kiss = document.createElement('div');
+        kiss.className = 'kissEmoji';
+        kiss.textContent = '💋';
+        kiss.style.left = Math.random() * window.innerWidth + 'px';
+        kiss.style.top = Math.random() * window.innerHeight + 'px';
+        kiss.style.animationDelay = Math.random() * 5 + 's';
+        finalMessage.appendChild(kiss);
+        
+        setTimeout(() => kiss.remove(), 5000);
+      }
+
+      // Create heart rain
+      function createHeartRain() {
+        for (let i = 0; i < 15; i++) {
+          setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.className = 'heartRain';
+            heart.style.left = Math.random() * window.innerWidth + 'px';
+            heart.style.animationDelay = Math.random() * 2 + 's';
+            heart.style.animationDuration = (4 + Math.random() * 3) + 's';
+            finalMessage.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 7000);
+          }, i * 200);
+        }
+      }
+
+      // Love messages that appear on click
+      const loveMessages = [
+        "You make my heart skip a beat 💓",
+        "Every day with you is a blessing ✨",
+        "You are my sunshine ☀️",
+        "I love you more than words can say 💕",
+        "You are my everything 💖",
+        "My heart belongs to you 💗",
+        "You make me the happiest person alive 😊",
+        "I'm so grateful for you 🙏",
+        "You are my dream come true 🌟",
+        "I love you to the moon and back 🌙"
+      ];
+
+      function showLoveMessage(x, y) {
+        const message = document.createElement('div');
+        message.className = 'loveMessage';
+        message.textContent = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+        message.style.left = x + 'px';
+        message.style.top = y + 'px';
+        finalMessage.appendChild(message);
+        
+        setTimeout(() => message.remove(), 2000);
+      }
+
+      // Letter-specific interactions
+      const letterPaper = finalMessage.querySelector('.letterPaper');
+      const letterSeal = finalMessage.querySelector('.letterSeal');
+      
+      // Handle both click and touch interactions for love messages
+      function handleFinalMessageInteraction(e) {
+        const x = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+        const y = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        showLoveMessage(x, y);
+        
+        // Create burst of hearts on interaction
+        for (let i = 0; i < 8; i++) {
+          setTimeout(() => {
+            const heart = document.createElement('div');
+            heart.className = 'loveHeart';
+            heart.textContent = '💖';
+            heart.style.left = (x + (Math.random() - 0.5) * 100) + 'px';
+            heart.style.top = (y + (Math.random() - 0.5) * 100) + 'px';
+            heart.style.animationDuration = '2s';
+            heart.style.fontSize = (20 + Math.random() * 15) + 'px';
+            finalMessage.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 2000);
+          }, i * 100);
+        }
+      }
+      
+      finalMessage.addEventListener('click', handleFinalMessageInteraction);
+      finalMessage.addEventListener('touchstart', handleFinalMessageInteraction);
+
+      // Special interaction for the letter seal
+      if (letterSeal) {
+        function handleSealInteraction(e) {
+          e.stopPropagation();
+          
+          // Create a special seal animation
+          letterSeal.style.transform = 'scale(1.3)';
+          letterSeal.style.transition = 'transform 0.3s ease';
+          
+          setTimeout(() => {
+            letterSeal.style.transform = 'scale(1)';
+          }, 300);
+          
+          // Create extra hearts around the seal
+          for (let i = 0; i < 12; i++) {
+            setTimeout(() => {
+              const heart = document.createElement('div');
+              heart.className = 'loveHeart';
+              heart.textContent = '💕';
+              heart.style.left = (letterSeal.offsetLeft + letterSeal.offsetWidth/2 + (Math.random() - 0.5) * 80) + 'px';
+              heart.style.top = (letterSeal.offsetTop + letterSeal.offsetHeight/2 + (Math.random() - 0.5) * 80) + 'px';
+              heart.style.animationDuration = '3s';
+              heart.style.fontSize = (16 + Math.random() * 12) + 'px';
+              finalMessage.appendChild(heart);
+              
+              setTimeout(() => heart.remove(), 3000);
+            }, i * 50);
+          }
+        }
+        
+        letterSeal.addEventListener('click', handleSealInteraction);
+        letterSeal.addEventListener('touchstart', handleSealInteraction);
+      }
+
+      // Start continuous animations
+      setInterval(createLoveHeart, 2000);
+      setInterval(createSparkle, 1500);
+      setInterval(createKiss, 3000);
+      
+      // Create initial heart rain
+      createHeartRain();
+      
+      // Create more heart rain periodically
+      setInterval(createHeartRain, 8000);
+
+      // Create initial elements
+      for (let i = 0; i < 5; i++) {
+        setTimeout(createLoveHeart, i * 400);
+        setTimeout(createSparkle, i * 300);
+        setTimeout(createKiss, i * 600);
+      }
+    }
+
+    // Setup scroll indicator functionality
+    function setupScrollIndicator() {
+      const finalMessage = document.getElementById('finalMessage');
+      const scrollIndicator = document.querySelector('.scrollIndicator');
+      
+      if (!finalMessage || !scrollIndicator) return;
+
+      let scrollTimeout;
+      let isScrolling = false;
+
+      // Hide scroll indicator when scrolling starts
+      finalMessage.addEventListener('scroll', () => {
+        if (!isScrolling) {
+          isScrolling = true;
+          scrollIndicator.style.opacity = '0';
+          scrollIndicator.style.transform = 'translateY(10px)';
+          scrollIndicator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        }
+
+        // Clear existing timeout
+        clearTimeout(scrollTimeout);
+        
+        // Show indicator again after scrolling stops
+        scrollTimeout = setTimeout(() => {
+          isScrolling = false;
+          scrollIndicator.style.opacity = '0.8';
+          scrollIndicator.style.transform = 'translateY(0)';
+        }, 1000);
+      });
+
+      // Click/touch scroll indicator to scroll to top
+      function handleScrollIndicatorClick() {
+        finalMessage.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+      
+      scrollIndicator.addEventListener('click', handleScrollIndicatorClick);
+      scrollIndicator.addEventListener('touchstart', handleScrollIndicatorClick);
+
+      // Auto-hide indicator after 5 seconds if no scrolling
+      setTimeout(() => {
+        if (!isScrolling) {
+          scrollIndicator.style.opacity = '0.6';
+          scrollIndicator.style.transform = 'scale(0.95)';
+          scrollIndicator.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        }
+      }, 5000);
+    }
+
+  </script>
+</body>
+</html>
