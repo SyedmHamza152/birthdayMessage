@@ -36,6 +36,12 @@
       font-size: 3rem;
       margin: 0 20px;
       text-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      max-width: 100%;
+      box-sizing: border-box;
+      text-align: center;
     }
 
     #intro .subtitle {
@@ -45,12 +51,18 @@
     }
 
     .typewriter {
-      overflow: hidden;
-      white-space: nowrap;
+      overflow: visible;
+      white-space: normal;
       border-right: 3px solid rgba(255,255,255,0.85);
-      width: 0;
-      animation: typing 3s steps(28, end) forwards, caret 800ms step-end infinite;
+      width: auto;
+      max-width: 100%;
+      animation: typing 3s steps(28, end) forwards, caret 800ms step-end infinite, showFull 0.1s forwards;
       animation-delay: 0.5s;
+      animation-fill-mode: forwards;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      padding: 0 10px;
+      box-sizing: border-box;
     }
 
     .hearts {
@@ -108,8 +120,13 @@
     }
 
     @keyframes typing {
-      from { width: 0; }
-      to { width: 30ch; }
+      from { width: 0; max-width: 0; }
+      to { width: 100%; max-width: 100%; }
+    }
+    
+    @keyframes showFull {
+      from { overflow: hidden; white-space: nowrap; }
+      to { overflow: visible; white-space: normal; border-right: none; }
     }
 
     @keyframes caret {
@@ -174,6 +191,53 @@
       letter-spacing: 0.3px;
       animation: pulse 1.6s ease-in-out infinite;
       user-select: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      padding: 10px 20px;
+      border-radius: 25px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      text-shadow: 0 2px 10px rgba(255,105,180,0.5);
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    #hint:hover {
+      background: rgba(255,255,255,0.15);
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255,105,180,0.3);
+    }
+
+    #hint:active {
+      transform: scale(0.98);
+    }
+
+    @keyframes messageChange {
+      0% { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      50% { 
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+      }
+      100% { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes sparkleFloat {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(-100px) scale(0);
+      }
     }
 
     @keyframes pulse {
@@ -437,9 +501,14 @@
         0 0 80px rgba(255,128,171,0.3);
       animation: textFloat3D 4s ease-in-out infinite;
       filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
-      white-space: nowrap;
-      max-width: 100%;
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 90%;
       overflow: visible;
+      text-align: center;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
 
     @keyframes textFloat3D {
@@ -595,6 +664,9 @@
       letter-spacing: 1px;
       cursor: pointer;
       user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
       padding: 12px 24px;
       border-radius: 15px;
       background: linear-gradient(135deg, rgba(255,128,171,0.2), rgba(255,202,40,0.2));
@@ -606,6 +678,8 @@
       opacity: 1;
       visibility: visible;
       z-index: 1000;
+      pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
     }
 
     @keyframes ctaPulse {
@@ -644,6 +718,8 @@
       overflow-x: hidden;
       background: linear-gradient(135deg, #ff6a88, #ffcc70);
       scroll-behavior: smooth;
+      pointer-events: auto;
+      touch-action: manipulation;
     }
 
     @keyframes messageFadeIn {
@@ -805,31 +881,7 @@
       pointer-events: none;
     }
 
-    .letterSeal {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
-      background: radial-gradient(circle, #ff69b4, #ff1493);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: white;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      animation: sealGlow 3s ease-in-out infinite;
-    }
-
-    @keyframes sealGlow {
-      0%, 100% { 
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 0 0 rgba(255, 105, 180, 0.5);
-      }
-      50% { 
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 0 20px rgba(255, 105, 180, 0.8);
-      }
-    }
+    /* Letter seal - removed */
 
     /* Interactive love elements */
     .loveHeart {
@@ -990,42 +1042,7 @@
       }
     }
 
-    /* Scroll indicator */
-    .scrollIndicator {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(255, 255, 255, 0.95);
-      color: #ff69b4;
-      padding: 12px 18px;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-      z-index: 1400;
-      animation: scrollBounce 2s ease-in-out infinite;
-      cursor: pointer;
-      user-select: none;
-      border: 2px solid rgba(255, 105, 180, 0.3);
-      backdrop-filter: blur(10px);
-    }
-
-    @keyframes scrollBounce {
-      0%, 100% { 
-        transform: translateY(0);
-        opacity: 0.8;
-      }
-      50% { 
-        transform: translateY(-5px);
-        opacity: 1;
-      }
-    }
-
-    .scrollIndicator:hover {
-      background: rgba(255, 255, 255, 1);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    }
+    /* Scroll indicator - removed */
 
     /* Portrait mobile optimization - Step by step view */
     @media screen and (max-width: 768px) and (orientation: portrait) {
@@ -1068,6 +1085,17 @@
         opacity: 1 !important;
         visibility: visible !important;
         z-index: 10 !important;
+        display: flex !important;
+      }
+      
+      /* Ensure countdown elements are visible when counterScreen is active */
+      #counterScreen.active #countdown,
+      #counterScreen.active #message,
+      #counterScreen.active #secondProgress,
+      #counterScreen.active #hint {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
       }
       
       /* Intro section portrait optimization */
@@ -1080,6 +1108,12 @@
         align-items: center !important;
       }
       
+      #intro.active {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      
       #intro h1 {
         font-size: 1.8rem !important;
         margin: 0 15px !important;
@@ -1090,6 +1124,21 @@
         hyphens: auto !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        width: auto !important;
+      }
+      
+      #intro h1.typewriter {
+        overflow: visible !important;
+        white-space: normal !important;
+        width: auto !important;
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
       }
       
       #intro .subtitle {
@@ -1097,6 +1146,9 @@
         margin-top: 15px !important;
         padding: 0 20px !important;
         text-align: center !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       /* Countdown section portrait optimization */
@@ -1107,6 +1159,36 @@
         flex-direction: column !important;
         justify-content: center !important;
         align-items: center !important;
+      }
+      
+      #counterScreen.active {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      
+      #counterScreen.active #countdown {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      #counterScreen.active #message {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      #counterScreen.active #secondProgress {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      #counterScreen.active #hint {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       #countdown {
@@ -1161,6 +1243,12 @@
         align-items: center !important;
       }
       
+      #scene3d.active {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      
       .birthday3DText {
         font-size: 1.5rem !important;
         text-align: center !important;
@@ -1172,6 +1260,15 @@
         max-width: 100% !important;
         padding: 0 15px !important;
         box-sizing: border-box !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      #scene3d.active .birthday3DText {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       .loveLetter3D {
@@ -1298,6 +1395,18 @@
         height: 350px !important;
       }
       
+      /* Fix for mobile - ensure countdown is visible */
+      #counterScreen {
+        display: flex !important;
+      }
+      
+      #counterScreen #countdown,
+      #counterScreen #message {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      
       /* Prevent mobile zoom and touch issues */
       body {
         touch-action: manipulation;
@@ -1323,6 +1432,41 @@
         gap: 8px !important;
         width: 100% !important;
         height: 100% !important;
+      }
+      
+      /* Ensure countdown elements are visible on mobile */
+      #counterScreen #countdown,
+      #counterScreen #message,
+      #counterScreen #secondProgress,
+      #counterScreen #hint {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      
+      /* Ensure intro elements are visible on mobile */
+      #intro {
+        display: flex !important;
+      }
+      
+      #intro h1,
+      #intro .subtitle {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* Ensure 3D scene text is visible on mobile */
+      .birthday3DText {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      #scene3d.active .birthday3DText {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       #scene3d {
@@ -1396,7 +1540,9 @@
       /* Fix button text truncation on mobile */
       #openLetterCta {
         font-size: 24px !important;
-        padding: 10px 15px !important;
+        padding: 15px 20px !important;
+        min-height: 44px !important;
+        min-width: 44px !important;
         white-space: normal !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
@@ -1405,6 +1551,13 @@
         box-sizing: border-box !important;
         text-align: center !important;
         line-height: 1.2 !important;
+        touch-action: manipulation !important;
+        pointer-events: auto !important;
+        -webkit-tap-highlight-color: transparent !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        cursor: pointer !important;
+        z-index: 1001 !important;
       }
     }
 
@@ -1470,7 +1623,13 @@
       .birthday3DText {
         font-size: 1.5rem !important;
         margin-bottom: 20px !important;
-        line-height: 1.1 !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 95% !important;
+        padding: 0 10px !important;
+        text-align: center !important;
       }
       
       .loveLetter3D {
@@ -1481,10 +1640,18 @@
       
       #openLetterCta {
         font-size: 1rem !important;
-        padding: 12px 15px !important;
+        padding: 15px 20px !important;
+        min-height: 44px !important;
         width: 95% !important;
         max-width: 350px !important;
         line-height: 1.2 !important;
+        touch-action: manipulation !important;
+        pointer-events: auto !important;
+        -webkit-tap-highlight-color: transparent !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        cursor: pointer !important;
+        z-index: 1001 !important;
       }
       
       /* Final message ultra-compact */
@@ -1519,12 +1686,7 @@
       }
       
       /* Scroll indicator ultra-compact */
-      .scrollIndicator {
-        bottom: 5px !important;
-        right: 5px !important;
-        font-size: 0.7rem !important;
-        padding: 6px 10px !important;
-      }
+      /* Scroll indicator removed */
     }
 
     /* Additional mobile fixes for very small screens */
@@ -1545,6 +1707,12 @@
       
       .birthday3DText {
         font-size: 56px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 90% !important;
+        padding: 0 20px !important;
+        text-align: center !important;
       }
       
       #openLetterCta {
@@ -1691,7 +1859,6 @@
 
   <section id="finalMessage" role="dialog" aria-modal="true" aria-label="A love letter for a beautiful friend">
     <div class="loveGlow"></div>
-    <div class="scrollIndicator">📜 Scroll to read more 💕</div>
     <div class="letterContainer">
       <div class="letterPaper">
         <div class="letterLines"></div>
@@ -1715,11 +1882,17 @@
           I promise to be your biggest supporter, your shoulder to cry on , and your partner in all adventures. I promise to make you laugh every day , to hold your hand through every storm , and to celebrate every victory together 🏆💕.<br><br>
           
           <strong>What I Love About You: 💖</strong><br>
-          • Your beautiful heart that cares for everyone around you 💝<br>
-          • Your infectious laugh that brightens even the darkest days✨ <br>
-          • Your strength and determination that inspires me daily 💪✨<br>
-          • Your kindness that makes the world a better place 🌍💕<br>
-          • Your dreams and ambitions that I'm honored to support 🌟🙏<br><br>
+          • I love your beautiful heart — the way it beats with warmth, love, and care just for me. You make me feel like I’m the luckiest person alive every single day. 💝<br>
+
+• I love your laughter — that sweet sound that fills my world with light. No matter how bad my day gets, your laugh brings me peace and happiness. ✨<br>
+
+• I love your strength — the way you handle everything with grace and courage. You inspire me to be a better man every day. 💪❤️<br>
+
+• I love your kindness — how you treat people with so much love and respect. It’s one of the many reasons I fell for you and keep falling even deeper. 🌷💕<br>
+
+• I love your dreams — how passionate you are about what you want in life. I’ll always be beside you, cheering you on, believing in you more than anyone ever could. 🌟💖<br>
+
+• And above all… I love you — every smile, every word, every little thing about you. You’re not just someone I love; you’re the reason I believe in love. 💫❤️<br><br>
           
           <strong>Our Future Together: 🚀</strong><br>
           I can't wait to create countless memories with you 📸, to travel the world hand in hand ✈️🌍, to build a home filled with love and laughter 🏡💕, and to grow old together watching sunsets and making new dreams 🌅💭.<br><br>
@@ -1729,11 +1902,10 @@
           
           <div class="letterSignature">
             Forever yours, 💕<br>
-            Your devoted love 💍❤️💖💝💗
+            Your devoted love 💍❤️💖<br>
+		I love you 💝💗
           </div>
         </div>
-        
-        <div class="letterSeal">💌</div>
       </div>
     </div>
   </section>
@@ -1776,15 +1948,30 @@
     }
     
     // Check if timer is already over
-    let countdownDate = new Date("Oct 22, 2025 00:00:00").getTime();
+    let countdownDate = new Date("Nov 1, 2025 00:00:30").getTime();
     let now = new Date().getTime();
     let distance = countdownDate - now;
     
     // If timer is already over, skip intro and go directly to birthday celebration
     if (distance <= 0) {
-      // Hide intro immediately
-    const intro = document.getElementById("intro");
+      // Hide intro immediately and ensure message is fully visible
+      const intro = document.getElementById("intro");
       if (intro) {
+        // Remove typewriter animation and show full message immediately
+        const introH1 = intro.querySelector('h1');
+        if (introH1) {
+          introH1.style.animation = 'none';
+          introH1.style.width = 'auto';
+          introH1.style.maxWidth = '100%';
+          introH1.style.whiteSpace = 'normal';
+          introH1.style.borderRight = 'none';
+          introH1.style.overflow = 'visible';
+          introH1.style.wordWrap = 'break-word';
+          introH1.style.overflowWrap = 'break-word';
+          introH1.style.padding = '0 10px';
+          introH1.style.boxSizing = 'border-box';
+        }
+        
         if (isPortraitMobile()) {
           intro.classList.remove('active');
         } else {
@@ -1836,7 +2023,7 @@
       // Clear background elements
       clearAllBackgroundElements();
       
-      // Show birthday message and cake immediately
+      // Show birthday message and cake with full transition even when timer already expired
       const birthdayMsg = document.getElementById("birthdayMessage");
       const cake = document.getElementById("cake");
       
@@ -1846,14 +2033,14 @@
         } else {
           birthdayMsg.style.display = "block";
           birthdayMsg.style.opacity = "1";
-          birthdayMsg.style.animation = "bounceIn 2s ease forwards, glow 2s infinite alternate";
+          birthdayMsg.style.animation = "bounceIn 3.5s ease forwards, glow 2s infinite alternate";
           
           cake.style.display = "block";
           cake.style.opacity = "1";
-          cake.style.animation = "fadeInUp 1s ease forwards";
+          cake.style.animation = "fadeInUp 2s ease forwards";
         }
         
-        // After birthday text shows, split into letters and fly each with a balloon
+        // After birthday text shows, split into letters and fly each with a balloon (slower timing)
         setTimeout(() => {
           const msgEl = document.getElementById('birthdayMessage');
           const original = msgEl.textContent;
@@ -1876,20 +2063,20 @@
             lw.appendChild(l);
             wrap.appendChild(lw);
 
-            // Staggered fly up
+            // Staggered fly up (slower)
             setTimeout(() => {
               lw.style.setProperty('--dx', (Math.random()*40-20) + 'px');
-              lw.style.setProperty('--dur', (1.4 + Math.random()*0.8) + 's');
+              lw.style.setProperty('--dur', (2.2 + Math.random()*1.2) + 's');
               lw.classList.add('flyUp');
-            }, 200 + idx * 80);
+            }, 300 + idx * 120);
           });
 
-          // When letters done flying, hide the whole message to clear space
+          // When letters done flying, hide the whole message to clear space (longer delay)
           setTimeout(() => {
             msgEl.style.display = 'none';
-          }, 200 + letters.length * 80 + 1600);
+          }, 300 + letters.length * 120 + 2400);
 
-          // Spawn a few balloons near the cake
+          // Spawn a few balloons near the cake (slower)
           const cakeRect = cake.getBoundingClientRect();
           for (let i=0;i<8;i++) {
             setTimeout(() => {
@@ -1904,17 +2091,17 @@
               b.style.position = 'fixed';
               document.body.appendChild(b);
               setTimeout(()=>b.remove(), 12000);
-            }, i*200);
+            }, i*300);
           }
-        }, 1200);
+        }, 2200); // Increased delay before letters start
 
-        // Blow candle after 3 sec
+        // Blow candle after longer delay
         setTimeout(() => {
           const flame = document.querySelector(".flame");
           if (flame) flame.classList.add("blowOut");
-        }, 3000);
+        }, 6000); // Increased from 3s to 6s
 
-        // After candle blow, fade out birthday message and show 3D scene
+        // After candle blow, fade out birthday message and show 3D scene (longer delay)
         setTimeout(() => {
           const birthdayMsg = document.getElementById("birthdayMessage");
           const cake = document.getElementById("cake");
@@ -1926,8 +2113,8 @@
             birthdayMsg.offsetHeight;
             cake.offsetHeight;
             
-            birthdayMsg.style.animation = "fadeOut 1000ms ease forwards";
-            cake.style.animation = "fadeOut 1000ms ease forwards";
+            birthdayMsg.style.animation = "fadeOut 1500ms ease forwards";
+            cake.style.animation = "fadeOut 1500ms ease forwards";
             
             setTimeout(() => {
               birthdayMsg.style.display = "none";
@@ -1943,7 +2130,16 @@
                   scene3d.style.display = "flex";
                   
                   scene3d.offsetHeight;
-                  scene3d.style.animation = "sceneFadeIn 1.2s ease forwards";
+                  scene3d.style.animation = "sceneFadeIn 2s ease forwards";
+                }
+                
+                // Ensure 3D text message is fully visible
+                const birthday3DText = scene3d.querySelector('.birthday3DText');
+                if (birthday3DText) {
+                  birthday3DText.style.whiteSpace = 'normal';
+                  birthday3DText.style.overflow = 'visible';
+                  birthday3DText.style.width = 'auto';
+                  birthday3DText.style.maxWidth = '100%';
                 }
                 
                 setTimeout(() => {
@@ -1955,16 +2151,19 @@
                     cta.style.transform = "translateZ(10px) scale(0.8)";
                     
                     cta.offsetHeight;
-                    cta.style.transition = "opacity 600ms ease, transform 600ms ease";
+                    cta.style.transition = "opacity 800ms ease, transform 800ms ease";
                     cta.style.opacity = "1";
                     cta.style.transform = "translateZ(10px) scale(1)";
                     cta.focus();
+                    
+                    // Initialize button functionality when it becomes visible
+                    initializeLoveLetterFunctionality();
                   }
-                }, 1300);
+                }, 2100);
               }
-            }, 1000);
+            }, 1500);
           }
-        }, 4200);
+        }, 8500); // Increased from 4200ms to 8500ms for slower transition
 
         // Confetti
         for (let i = 0; i < 120; i++) {
@@ -1982,13 +2181,26 @@
       // Initialize love letter functionality for expired timer scenario
       setTimeout(() => {
         initializeLoveLetterFunctionality();
-      }, 5000); // Wait for 3D scene to appear
+      }, 12000); // Wait for birthday transition to complete (slower timing)
     } else {
       // Timer is not over, proceed with normal intro and countdown
       const intro = document.getElementById("intro");
       if (intro) {
         if (isPortraitMobile()) {
           showSection('intro');
+          // Explicitly show intro elements on mobile
+          const introH1 = intro.querySelector('h1');
+          const introSubtitle = intro.querySelector('.subtitle');
+          if (introH1) {
+            introH1.style.display = 'block';
+            introH1.style.visibility = 'visible';
+            introH1.style.opacity = '1';
+          }
+          if (introSubtitle) {
+            introSubtitle.style.display = 'block';
+            introSubtitle.style.visibility = 'visible';
+            introSubtitle.style.opacity = '1';
+          }
         } else {
           intro.style.display = 'flex';
           intro.style.opacity = '1';
@@ -2000,6 +2212,20 @@
     const counterScreen = document.getElementById("counterScreen");
     const progressBar = document.querySelector('#secondProgress span');
     const secondProgress = document.getElementById('secondProgress');
+
+    // Ensure intro text shows fully after typing animation
+    setTimeout(() => {
+      const introText = intro.querySelector('h1');
+      if (introText && introText.classList.contains('typewriter')) {
+        introText.style.overflow = 'visible';
+        introText.style.whiteSpace = 'normal';
+        introText.style.width = 'auto';
+        introText.style.maxWidth = '100%';
+        introText.style.borderRight = 'none';
+        introText.style.wordWrap = 'break-word';
+        introText.style.overflowWrap = 'break-word';
+      }
+    }, 3500); // After typing animation completes (0.5s delay + 3s animation)
 
     setTimeout(() => {
       // Only fade out the intro text, keep background elements
@@ -2022,6 +2248,12 @@
         // Show countdown screen
           if (isPortraitMobile()) {
             showSection('counterScreen');
+            // Explicitly show countdown elements on mobile
+            countdownEl.style.display = 'block';
+            messageEl.style.display = 'block';
+            secondProgress.style.display = 'block';
+            const hint = document.getElementById('hint');
+            if (hint) hint.style.display = 'block';
           } else {
         counterScreen.style.display = 'flex';
         countdownEl.style.display = 'block';
@@ -2045,6 +2277,9 @@
         messageEl.style.transform = 'translateY(0)';
         secondProgress.style.opacity = '1';
         secondProgress.style.transform = 'translateY(0)';
+        
+        // Setup hint click functionality when counter screen appears
+        setTimeout(setupHintClick, 500);
       }, 800);
       }, 3500); // 0.5s delay + 3s typing + small buffer
     }
@@ -2054,17 +2289,165 @@
       "Smile! It suits you so well 😊",
       "Tap to send a tiny heart 💗",
       "Close your eyes, think of a dream ✨",
-      "Counting down to your magic moment ⏳"
+      "Counting down to your magic moment ⏳",
+      "You're the most beautiful person in my world 💖",
+      "Every moment with you is magical ✨",
+      "My heart beats only for you 💓",
+      "You light up my entire universe 🌟",
+      "I'm the luckiest person to have you 💕",
+      "Your smile makes everything better 😊",
+      "You are my dream come true 💭",
+      "Time stands still when I'm with you ⏰",
+      "You're the reason for my happiness 🎉",
+      "Every day with you is a gift 🎁",
+      "You are my sunshine on cloudy days ☀️",
+      "I love you more than words can express 💌",
+      "You make my world complete 🌍",
+      "Your love is my greatest treasure 💎",
+      "I'm forever grateful for you 🙏",
+      "You are perfection in my eyes 👀",
+      "My love for you grows every day 🌱",
+      "You're the melody of my heart 🎵",
+      "With you, every moment is special 💫",
+      "You are my today, tomorrow, and forever ♾️",
+      "Your love is my strength 💪",
+      "I can't imagine life without you 💖",
+      "You make ordinary moments extraordinary ✨",
+      "Your happiness is my happiness 😊",
+      "You are my greatest blessing 🙌",
+      "I fall in love with you more each day 💕",
+      "Your love is the best part of my day 🌅",
+      "You're my home, my heart, my everything 🏠",
+      "Every second with you is precious ⏱️",
+      "You are my always and forever ♥️",
+      "Your love completes me 💝",
+      "I'm yours, now and always 💍",
+      "You make my heart sing 🎤",
+      "Your love is my anchor ⚓",
+      "Together forever, starting today 💑",
+      "You're my favorite person in the world 🌎",
+      "Your beauty takes my breath away 😍",
+      "I'm addicted to your love 💉",
+      "You're the missing piece I needed 🧩",
+      "My love for you is infinite ♾️",
+      "You make my heart race 🏃",
+      "You're my happily ever after 📖",
+      "I love you to infinity and beyond 🚀",
+      "You're my morning sunshine ☀️",
+      "Your love is my superpower ⚡",
+      "I'm completely yours 💯",
+      "You're the star in my sky ⭐",
+      "My heart belongs only to you 💖",
+      "You're my perfect match 💏",
+      "I love every part of you 💝",
+      "You make my soul dance 💃",
+      "You're my once in a lifetime 💫",
+      "I'm head over heels for you 💞",
+      "Your love makes me complete ✨",
+      "You're my favorite thought 💭",
+      "I love you more than yesterday 💕",
+      "You're my heart's desire 💗",
+      "Your love is my sanctuary 🏛️",
+      "I'm grateful for you every day 🙏"
     ];
 
-    let hintIndex = 0;
+    let lastHintIndex = -1;
 
     function setHint() {
       const hint = document.getElementById('hint');
-      if (hint) hint.textContent = hints[hintIndex++ % hints.length];
+      if (hint) {
+        // Randomly select a beautiful message, avoiding immediate repetition
+        let randomIndex;
+        do {
+          randomIndex = Math.floor(Math.random() * hints.length);
+        } while (randomIndex === lastHintIndex && hints.length > 1);
+        
+        lastHintIndex = randomIndex;
+        const message = hints[randomIndex];
+        
+        // Beautiful animation for message change
+        hint.style.animation = 'none';
+        hint.style.opacity = '0';
+        hint.style.transform = 'translateY(-20px) scale(0.9)';
+        hint.style.transition = 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+        
+        setTimeout(() => {
+          hint.textContent = message;
+          hint.style.opacity = '1';
+          hint.style.transform = 'translateY(0) scale(1)';
+          
+          // Add a sparkle effect
+          hint.style.boxShadow = '0 0 30px rgba(255,105,180,0.6), 0 4px 15px rgba(0,0,0,0.2)';
+          setTimeout(() => {
+            hint.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            hint.style.animation = 'pulse 1.6s ease-in-out infinite';
+          }, 600);
+        }, 150);
+      }
+    }
+
+    // Make hint clickable/tappable
+    function setupHintClick() {
+      const hint = document.getElementById('hint');
+      if (hint) {
+        hint.style.cursor = 'pointer';
+        hint.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Create a burst effect
+          const sparkles = ['✨', '⭐', '🌟', '💫', '✨'];
+          for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+              const sparkle = document.createElement('span');
+              sparkle.textContent = sparkles[i];
+              sparkle.style.position = 'fixed';
+              sparkle.style.left = (hint.offsetLeft + hint.offsetWidth / 2) + 'px';
+              sparkle.style.top = (hint.offsetTop + hint.offsetHeight / 2) + 'px';
+              sparkle.style.fontSize = '20px';
+              sparkle.style.pointerEvents = 'none';
+              sparkle.style.zIndex = '2000';
+              sparkle.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+              sparkle.style.animation = 'sparkleFloat 1s ease-out forwards';
+              document.body.appendChild(sparkle);
+              setTimeout(() => sparkle.remove(), 1000);
+            }, i * 50);
+          }
+          setHint();
+        });
+        
+        hint.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+          hint.style.transform = 'scale(0.95)';
+        });
+        
+        hint.addEventListener('touchend', (e) => {
+          e.stopPropagation();
+          hint.style.transform = 'scale(1)';
+          const sparkles = ['✨', '⭐', '🌟', '💫', '✨'];
+          for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+              const sparkle = document.createElement('span');
+              sparkle.textContent = sparkles[i];
+              sparkle.style.position = 'fixed';
+              sparkle.style.left = (hint.offsetLeft + hint.offsetWidth / 2) + 'px';
+              sparkle.style.top = (hint.offsetTop + hint.offsetHeight / 2) + 'px';
+              sparkle.style.fontSize = '20px';
+              sparkle.style.pointerEvents = 'none';
+              sparkle.style.zIndex = '2000';
+              sparkle.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+              sparkle.style.animation = 'sparkleFloat 1s ease-out forwards';
+              document.body.appendChild(sparkle);
+              setTimeout(() => sparkle.remove(), 1000);
+            }, i * 50);
+          }
+          setHint();
+        });
+      }
     }
 
     setHint();
+    
+    // Setup click functionality after DOM is ready
+    setTimeout(setupHintClick, 100);
 
     // Function to clear all background elements
     function clearAllBackgroundElements() {
@@ -2158,11 +2541,11 @@
           // Clear all background elements when birthday message appears
           clearAllBackgroundElements();
           
-          // Animate birthday elements in
-          birthdayMsg.style.animation = "bounceIn 2s ease forwards, glow 2s infinite alternate";
-          cake.style.animation = "fadeInUp 1s ease forwards";
+          // Animate birthday elements in (slower timing)
+          birthdayMsg.style.animation = "bounceIn 3.5s ease forwards, glow 2s infinite alternate";
+          cake.style.animation = "fadeInUp 2s ease forwards";
 
-          // After birthday text shows, split into letters and fly each with a balloon
+          // After birthday text shows, split into letters and fly each with a balloon (slower timing)
           setTimeout(() => {
             // Remove hint text when letters start flying
             const hint = document.getElementById('hint');
@@ -2192,20 +2575,20 @@
               lw.appendChild(l);
               wrap.appendChild(lw);
 
-              // Staggered fly up
+              // Staggered fly up (slower)
               setTimeout(() => {
                 lw.style.setProperty('--dx', (Math.random()*40-20) + 'px');
-                lw.style.setProperty('--dur', (1.4 + Math.random()*0.8) + 's');
+                lw.style.setProperty('--dur', (2.2 + Math.random()*1.2) + 's');
                 lw.classList.add('flyUp');
-              }, 200 + idx * 80);
+              }, 300 + idx * 120);
             });
 
-            // When letters done flying, hide the whole message to clear space
+            // When letters done flying, hide the whole message to clear space (longer delay)
             setTimeout(() => {
               msgEl.style.display = 'none';
-            }, 200 + letters.length * 80 + 1600);
+            }, 300 + letters.length * 120 + 2400);
 
-            // Spawn a few balloons near the cake
+            // Spawn a few balloons near the cake (slower)
             const cakeRect = cake.getBoundingClientRect();
             for (let i=0;i<8;i++) {
               setTimeout(() => {
@@ -2220,17 +2603,17 @@
                 b.style.position = 'fixed';
                 document.body.appendChild(b);
                 setTimeout(()=>b.remove(), 12000);
-              }, i*200);
+              }, i*300);
             }
-          }, 1200); // after bounceIn begins
+          }, 2200); // Increased delay before letters start
         }, 600); // Wait for fade out to complete
 
-        // Blow candle after 3 sec
+        // Blow candle after longer delay (slower timing)
         setTimeout(() => {
           document.querySelector(".flame").classList.add("blowOut");
-        }, 3000);
+        }, 6000); // Increased from 3s to 6s
 
-        // After candle blow, fade out birthday message and show 3D scene
+        // After candle blow, fade out birthday message and show 3D scene (slower timing)
         setTimeout(() => {
           // Fade out birthday message and cake completely
           const birthdayMsg = document.getElementById("birthdayMessage");
@@ -2244,9 +2627,9 @@
           birthdayMsg.offsetHeight;
           cake.offsetHeight;
           
-          // Apply fade out animations
-          birthdayMsg.style.animation = "fadeOut 1000ms ease forwards";
-          cake.style.animation = "fadeOut 1000ms ease forwards";
+          // Apply fade out animations (slower)
+          birthdayMsg.style.animation = "fadeOut 1500ms ease forwards";
+          cake.style.animation = "fadeOut 1500ms ease forwards";
           
           // Wait for fade out to complete, then hide elements and show 3D scene
           setTimeout(() => {
@@ -2265,8 +2648,8 @@
             // Force reflow
             scene3d.offsetHeight;
             
-            // Apply fade in animation
-            scene3d.style.animation = "sceneFadeIn 1.2s ease forwards";
+            // Apply fade in animation (slower)
+            scene3d.style.animation = "sceneFadeIn 2s ease forwards";
             }
             
             // Show CTA after scene animation completes
@@ -2282,18 +2665,21 @@
                 // Force reflow
                 cta.offsetHeight;
                 
-                // Animate CTA in
-                cta.style.transition = "opacity 600ms ease, transform 600ms ease";
+                // Animate CTA in (slower)
+                cta.style.transition = "opacity 800ms ease, transform 800ms ease";
                 cta.style.opacity = "1";
                 cta.style.transform = "translateZ(10px) scale(1)";
                 cta.focus();
                 console.log('Love letter button should now be visible');
+                
+                // Initialize button functionality when it becomes visible
+                initializeLoveLetterFunctionality();
               } else {
                 console.error('Love letter button not found!');
               }
-            }, 1300); // Wait for sceneFadeIn animation (1.2s) + small buffer
-          }, 1000); // Wait for fade out to complete
-        }, 4200); // 3s candle blow + 1.2s delay
+            }, 2100); // Wait for sceneFadeIn animation (2s) + small buffer
+          }, 1500); // Wait for fade out to complete (slower)
+        }, 8500); // Increased from 4200ms to 8500ms for slower transition
 
         // Confetti
         for (let i = 0; i < 120; i++) {
@@ -2383,12 +2769,12 @@
           birthdayMsg.offsetHeight;
           cake.offsetHeight;
           
-          // Animate birthday elements in
-          birthdayMsg.style.animation = "bounceIn 2s ease forwards, glow 2s infinite alternate";
-          cake.style.animation = "fadeInUp 1s ease forwards";
+          // Animate birthday elements in (slower timing)
+          birthdayMsg.style.animation = "bounceIn 3.5s ease forwards, glow 2s infinite alternate";
+          cake.style.animation = "fadeInUp 2s ease forwards";
           }
 
-          // After birthday text shows, split into letters and fly each with a balloon
+          // After birthday text shows, split into letters and fly each with a balloon (slower timing)
           setTimeout(() => {
             // Remove hint text when letters start flying
             const hint = document.getElementById('hint');
@@ -2418,20 +2804,20 @@
               lw.appendChild(l);
               wrap.appendChild(lw);
 
-              // Staggered fly up
+              // Staggered fly up (slower)
               setTimeout(() => {
                 lw.style.setProperty('--dx', (Math.random()*40-20) + 'px');
-                lw.style.setProperty('--dur', (1.4 + Math.random()*0.8) + 's');
+                lw.style.setProperty('--dur', (2.2 + Math.random()*1.2) + 's');
                 lw.classList.add('flyUp');
-              }, 200 + idx * 80);
+              }, 300 + idx * 120);
             });
 
-            // When letters done flying, hide the whole message to clear space
+            // When letters done flying, hide the whole message to clear space (longer delay)
             setTimeout(() => {
               msgEl.style.display = 'none';
-            }, 200 + letters.length * 80 + 1600);
+            }, 300 + letters.length * 120 + 2400);
 
-            // Spawn a few balloons near the cake
+            // Spawn a few balloons near the cake (slower)
             const cakeRect = cake.getBoundingClientRect();
             for (let i=0;i<8;i++) {
               setTimeout(() => {
@@ -2446,17 +2832,17 @@
                 b.style.position = 'fixed';
                 document.body.appendChild(b);
                 setTimeout(()=>b.remove(), 12000);
-              }, i*200);
+              }, i*300);
             }
-          }, 1200); // after bounceIn begins
+          }, 2200); // Increased delay before letters start
         }, 600); // Wait for fade out to complete
 
-        // Blow candle after 3 sec
+        // Blow candle after longer delay (slower timing)
         setTimeout(() => {
           document.querySelector(".flame").classList.add("blowOut");
-        }, 3000);
+        }, 6000); // Increased from 3s to 6s
 
-        // After candle blow, fade out birthday message and show 3D scene
+        // After candle blow, fade out birthday message and show 3D scene (slower timing)
         setTimeout(() => {
           // Fade out birthday message and cake completely
           const birthdayMsg = document.getElementById("birthdayMessage");
@@ -2470,9 +2856,9 @@
           birthdayMsg.offsetHeight;
           cake.offsetHeight;
           
-          // Apply fade out animations
-          birthdayMsg.style.animation = "fadeOut 1000ms ease forwards";
-          cake.style.animation = "fadeOut 1000ms ease forwards";
+          // Apply fade out animations (slower)
+          birthdayMsg.style.animation = "fadeOut 1500ms ease forwards";
+          cake.style.animation = "fadeOut 1500ms ease forwards";
           
           // Wait for fade out to complete, then hide elements and show 3D scene
           setTimeout(() => {
@@ -2491,8 +2877,8 @@
             // Force reflow
             scene3d.offsetHeight;
             
-            // Apply fade in animation
-            scene3d.style.animation = "sceneFadeIn 1.2s ease forwards";
+            // Apply fade in animation (slower)
+            scene3d.style.animation = "sceneFadeIn 2s ease forwards";
             }
             
             // Show CTA after scene animation completes
@@ -2508,8 +2894,8 @@
                 // Force reflow
                 cta.offsetHeight;
                 
-                // Animate CTA in
-                cta.style.transition = "opacity 600ms ease, transform 600ms ease";
+                // Animate CTA in (slower)
+                cta.style.transition = "opacity 800ms ease, transform 800ms ease";
                 cta.style.opacity = "1";
                 cta.style.transform = "translateZ(10px) scale(1)";
                 cta.focus();
@@ -2517,9 +2903,9 @@
               } else {
                 console.error('Love letter button not found!');
               }
-            }, 1300); // Wait for sceneFadeIn animation (1.2s) + small buffer
-          }, 1000); // Wait for fade out to complete
-        }, 4200); // 3s candle blow + 1.2s delay
+            }, 2100); // Wait for sceneFadeIn animation (2s) + small buffer
+          }, 1500); // Wait for fade out to complete (slower)
+        }, 8500); // Increased from 4200ms to 8500ms for slower transition
 
         // Confetti
         for (let i = 0; i < 120; i++) {
@@ -2578,11 +2964,70 @@
 
       // Handle both click and touch events for mobile compatibility
       function handleInteraction(e) {
-      if (counterScreen.style.display !== 'flex') return;
+        if (counterScreen.style.display !== 'flex') return;
         const x = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
         const y = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        
+        // Pop a heart at the touch point
         popHeart(x, y);
-      setHint();
+        
+        // Show a random beautiful message that floats up
+        const beautifulMessages = [
+          "You're amazing! 💖",
+          "My heart belongs to you 💗",
+          "You're beautiful inside and out ✨",
+          "I love you more each day 💕",
+          "You make everything better 🌟",
+          "My soulmate forever 💝",
+          "You're my everything 💖",
+          "Infinite love for you ♾️",
+          "You complete me 💑",
+          "My heart beats for you 💓",
+          "You're my dream come true 💭",
+          "Forever yours 💍",
+          "You're my sunshine ☀️",
+          "I'm yours always 💕",
+          "You light up my life 💡",
+          "My beautiful angel 👼",
+          "I cherish you 💎",
+          "You're perfect 💯",
+          "My love for you is endless ♥️",
+          "You're my world 🌍"
+        ];
+        
+        // Create floating message
+        const floatingMsg = document.createElement('div');
+        floatingMsg.style.position = 'fixed';
+        floatingMsg.style.left = x + 'px';
+        floatingMsg.style.top = y + 'px';
+        floatingMsg.style.color = '#fff';
+        floatingMsg.style.fontSize = '20px';
+        floatingMsg.style.fontWeight = 'bold';
+        floatingMsg.style.textShadow = '0 2px 10px rgba(255,105,180,0.8), 0 0 20px rgba(255,255,255,0.6)';
+        floatingMsg.style.pointerEvents = 'none';
+        floatingMsg.style.zIndex = '2000';
+        floatingMsg.style.whiteSpace = 'nowrap';
+        floatingMsg.textContent = beautifulMessages[Math.floor(Math.random() * beautifulMessages.length)];
+        floatingMsg.style.opacity = '0';
+        floatingMsg.style.transform = 'translateY(0) scale(0.5)';
+        floatingMsg.style.transition = 'all 2s ease-out';
+        document.body.appendChild(floatingMsg);
+        
+        // Animate the floating message
+        setTimeout(() => {
+          floatingMsg.style.opacity = '1';
+          floatingMsg.style.transform = 'translateY(-100px) scale(1)';
+        }, 10);
+        
+        // Remove after animation
+        setTimeout(() => {
+          floatingMsg.style.opacity = '0';
+          floatingMsg.style.transform = 'translateY(-150px) scale(0.8)';
+          setTimeout(() => floatingMsg.remove(), 500);
+        }, 1500);
+        
+        // Update hint text
+        setHint();
       }
 
       document.addEventListener('click', handleInteraction);
@@ -2605,187 +3050,47 @@
         return;
       }
       
+      // Check if already initialized
+      if (openLetterBtn.dataset.initialized === 'true') {
+        console.log('Love letter functionality already initialized');
+        return;
+      }
+      openLetterBtn.dataset.initialized = 'true';
+      
       console.log('Initializing love letter functionality...');
       
-      function openLetter() {
-        if (!scene3d || scene3d.style.display !== 'flex') return;
-        if (letterEnvelope && !letterEnvelope.classList.contains('opened')) {
-          console.log('Opening love letter...');
-          
-          // Disable button to prevent multiple clicks
-          openLetterBtn.style.pointerEvents = 'none';
-          openLetterBtn.style.opacity = '0.7';
-          
-          // Open the letter envelope
-          letterEnvelope.classList.add('opened');
-          
-          // Enhanced celebratory burst with better positioning
-          setTimeout(() => {
-            console.log('Creating confetti burst...');
-            for (let i = 0; i < 100; i++) {
-              const c = document.createElement('div');
-              c.className = 'confetti';
-              c.style.left = (window.innerWidth/2 + (Math.random()*200-100)) + 'px';
-              c.style.top = (window.innerHeight/2 + (Math.random()*100-50)) + 'px';
-              c.style.backgroundColor = 'hsl(' + Math.random()*360 + ',100%,60%)';
-              c.style.animationDuration = (Math.random()*2 + 1.8) + 's';
-              c.style.width = c.style.height = (Math.random()*10 + 6) + 'px';
-              c.style.zIndex = '1500';
-              document.body.appendChild(c);
-              setTimeout(()=>c.remove(), 4000);
-            }
-          }, 600); // Start confetti during envelope opening
-          
-          // Fade out 3D scene and reveal final message
-          setTimeout(() => {
-            console.log('Starting transition to final message...');
-            
-            // Reset scene animation
-            scene3d.style.animation = "none";
-            
-            // Force reflow
-            scene3d.offsetHeight;
-            
-            // Apply fade out animation
-            scene3d.style.animation = "fadeOut 1200ms ease forwards";
-            
-            setTimeout(() => {
-              console.log('Hiding 3D scene and showing final message...');
-              
-              // Hide 3D scene completely
-              if (isPortraitMobile()) {
-                scene3d.classList.remove('active');
-              } else {
-                scene3d.style.display = 'none';
-                scene3d.style.opacity = '0';
-              }
-              
-              // Clear all background elements when final message appears
-              function clearAllBackgroundElements() {
-                const hearts = document.querySelectorAll('.heart, .sparkle');
-                hearts.forEach(el => el.remove());
-                
-                const balloons = document.querySelectorAll('.balloon');
-                balloons.forEach(el => el.remove());
-                
-                const confetti = document.querySelectorAll('.confetti');
-                confetti.forEach(el => el.remove());
-                
-                const popHearts = document.querySelectorAll('.popHeart');
-                popHearts.forEach(el => el.remove());
-                
-                const progressBar = document.getElementById('secondProgress');
-                if (progressBar) {
-                  progressBar.style.display = 'none';
-                  progressBar.style.opacity = '0';
-                  progressBar.remove();
-                }
-                
-                const progressSpans = document.querySelectorAll('#secondProgress span');
-                progressSpans.forEach(span => span.remove());
-                
-                const intro = document.getElementById('intro');
-                if (intro) {
-                  intro.style.display = 'none';
-                  intro.style.opacity = '0';
-                }
-              }
-              
-              clearAllBackgroundElements();
-              
-              // Reset final message animation state
-              const fm = document.getElementById('finalMessage');
-              if (fm) {
-                console.log('Final message element found, showing...');
-                if (isPortraitMobile()) {
-                  showSection('finalMessage');
-                } else {
-                  fm.style.animation = "none";
-                  fm.style.opacity = "0";
-                  fm.style.display = 'flex';
-                  fm.style.visibility = 'visible';
-                  
-                  // Force reflow
-                  fm.offsetHeight;
-                
-                  // Apply fade in animation
-                  fm.style.animation = "messageFadeIn 1.5s ease forwards";
-                }
-                
-                // Make sure all letter content is visible
-                const letterPaper = fm.querySelector('.letterPaper');
-                const letterContent = fm.querySelector('.letterContent');
-                const letterHeader = fm.querySelector('.letterHeader');
-                
-                if (letterPaper) {
-                  letterPaper.style.opacity = '1';
-                  letterPaper.style.visibility = 'visible';
-                  console.log('Letter paper made visible');
-                }
-                
-                if (letterContent) {
-                  letterContent.style.opacity = '1';
-                  letterContent.style.visibility = 'visible';
-                  console.log('Letter content made visible');
-                }
-                
-                if (letterHeader) {
-                  letterHeader.style.opacity = '1';
-                  letterHeader.style.visibility = 'visible';
-                  console.log('Letter header made visible');
-                }
-                
-                // Start interactive love elements after message appears
-                setTimeout(() => {
-                  console.log('Starting interactive love elements...');
-                  startInteractiveLoveElements();
-                  setupScrollIndicator();
-                }, 1500);
-              } else {
-                console.error('Final message element not found!');
-              }
-            }, 1200); // Wait for fade out to complete
-          }, 1400); // Wait for envelope opening animation to complete
-        }
-      }
-      
-      // Remove existing event listeners to avoid duplicates
-      openLetterBtn.removeEventListener('click', openLetter);
-      openLetterBtn.removeEventListener('touchstart', openLetter);
-      
-      // Add event listeners
-      openLetterBtn.addEventListener('click', openLetter);
-      openLetterBtn.addEventListener('touchstart', openLetter);
-      openLetterBtn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+      function openLetter(e) {
+        if (e) {
           e.preventDefault();
-          openLetter();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
         }
-      });
-      
-      console.log('Love letter functionality initialized successfully!');
-    }
-
-    // Interactive love elements for final message
-    const openLetterBtn = document.getElementById('openLetterCta');
-    const scene3d = document.getElementById('scene3d');
-    const letterEnvelope = document.querySelector('.letterEnvelope');
-    
-    function openLetter() {
-      // Check if 3D scene is visible (either by display or by active class for mobile)
-      const isSceneVisible = scene3d && (
-        scene3d.style.display === 'flex' || 
-        (isPortraitMobile() && scene3d.classList.contains('active'))
-      );
-      
-      if (!isSceneVisible) return;
-      
-      if (letterEnvelope && !letterEnvelope.classList.contains('opened')) {
+        
+        // Check if 3D scene is visible (mobile or desktop)
+        const isSceneVisible = scene3d && (
+          scene3d.style.display === 'flex' || 
+          scene3d.style.display === '' ||
+          (isPortraitMobile() && scene3d.classList.contains('active')) ||
+          window.getComputedStyle(scene3d).display !== 'none'
+        );
+        
+        if (!isSceneVisible) {
+          console.log('Scene not visible, cannot open letter');
+          return false;
+        }
+        
+        // Check if already opened
+        if (letterEnvelope && letterEnvelope.classList.contains('opened')) {
+          console.log('Letter already opened');
+          return false;
+        }
+        
         console.log('Opening love letter...');
         
         // Disable button to prevent multiple clicks
         openLetterBtn.style.pointerEvents = 'none';
         openLetterBtn.style.opacity = '0.7';
+        openLetterBtn.disabled = true;
         
         // Open the letter envelope
         letterEnvelope.classList.add('opened');
@@ -2824,30 +3129,64 @@
             console.log('Hiding 3D scene and showing final message...');
             
             // Hide 3D scene completely
-            scene3d.style.display = 'none';
-            scene3d.style.opacity = '0';
+            if (isPortraitMobile()) {
+              scene3d.classList.remove('active');
+            } else {
+              scene3d.style.display = 'none';
+              scene3d.style.opacity = '0';
+            }
             
             // Clear all background elements when final message appears
+            function clearAllBackgroundElements() {
+              const hearts = document.querySelectorAll('.heart, .sparkle');
+              hearts.forEach(el => el.remove());
+              
+              const balloons = document.querySelectorAll('.balloon');
+              balloons.forEach(el => el.remove());
+              
+              const confetti = document.querySelectorAll('.confetti');
+              confetti.forEach(el => el.remove());
+              
+              const popHearts = document.querySelectorAll('.popHeart');
+              popHearts.forEach(el => el.remove());
+              
+              const progressBar = document.getElementById('secondProgress');
+              if (progressBar) {
+                progressBar.style.display = 'none';
+                progressBar.style.opacity = '0';
+                progressBar.remove();
+              }
+              
+              const progressSpans = document.querySelectorAll('#secondProgress span');
+              progressSpans.forEach(span => span.remove());
+              
+              const intro = document.getElementById('intro');
+              if (intro) {
+                intro.style.display = 'none';
+                intro.style.opacity = '0';
+              }
+            }
+            
             clearAllBackgroundElements();
             
             // Reset final message animation state
             const fm = document.getElementById('finalMessage');
             if (fm) {
               console.log('Final message element found, showing...');
-                if (isPortraitMobile()) {
-                  showSection('finalMessage');
-                } else {
-            fm.style.animation = "none";
-            fm.style.opacity = "0";
-            fm.style.display = 'flex';
-              fm.style.visibility = 'visible';
-            
-            // Force reflow
-            fm.offsetHeight;
-            
-            // Apply fade in animation
-            fm.style.animation = "messageFadeIn 1.5s ease forwards";
-                }
+              if (isPortraitMobile()) {
+                showSection('finalMessage');
+              } else {
+                fm.style.animation = "none";
+                fm.style.opacity = "0";
+                fm.style.display = 'flex';
+                fm.style.visibility = 'visible';
+                
+                // Force reflow
+                fm.offsetHeight;
+              
+                // Apply fade in animation
+                fm.style.animation = "messageFadeIn 1.5s ease forwards";
+              }
               
               // Make sure all letter content is visible
               const letterPaper = fm.querySelector('.letterPaper');
@@ -2876,29 +3215,97 @@
               setTimeout(() => {
                 console.log('Starting interactive love elements...');
                 startInteractiveLoveElements();
-                setupScrollIndicator();
               }, 1500);
             } else {
               console.error('Final message element not found!');
             }
           }, 1200); // Wait for fade out to complete
         }, 1400); // Wait for envelope opening animation to complete
+        
+        return false;
       }
-    }
-    if (openLetterBtn) {
-      openLetterBtn.addEventListener('click', openLetter);
-      openLetterBtn.addEventListener('keydown', (e) => {
+      
+      // Remove all existing listeners by cloning the button (cleanest way)
+      const newBtn = openLetterBtn.cloneNode(true);
+      openLetterBtn.parentNode.replaceChild(newBtn, openLetterBtn);
+      const openLetterBtnClean = document.getElementById('openLetterCta');
+      
+      // Add single unified event handler
+      const handleOpenLetter = function(e) {
+        console.log('Button clicked/touched!', e.type);
+        return openLetter(e);
+      };
+      
+      // Add event listeners with better mobile support
+      openLetterBtnClean.addEventListener('click', handleOpenLetter, { passive: false });
+      openLetterBtnClean.addEventListener('touchstart', handleOpenLetter, { passive: false, capture: true });
+      openLetterBtnClean.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+      
+      openLetterBtnClean.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openLetter();
+          openLetter(e);
         }
       });
+      
+      // Ensure button is interactive
+      openLetterBtnClean.style.pointerEvents = 'auto';
+      openLetterBtnClean.style.cursor = 'pointer';
+      openLetterBtnClean.style.touchAction = 'manipulation';
+      openLetterBtnClean.style.position = 'relative';
+      openLetterBtnClean.style.zIndex = '1001';
+      openLetterBtnClean.setAttribute('role', 'button');
+      openLetterBtnClean.setAttribute('tabindex', '0');
+      openLetterBtnClean.setAttribute('aria-label', 'Tap to open your love letter');
+      openLetterBtnClean.disabled = false;
+      
+      console.log('Love letter functionality initialized successfully!');
+      console.log('Button element:', openLetterBtnClean);
+      console.log('Scene3d element:', scene3d);
+      console.log('Letter envelope:', letterEnvelope);
     }
+
+    // Duplicate function removed - using initializeLoveLetterFunctionality instead
 
     // Interactive love elements for final message
     function startInteractiveLoveElements() {
       const finalMessage = document.getElementById('finalMessage');
-      if (!finalMessage || finalMessage.style.display !== 'flex') return;
+      if (!finalMessage) {
+        console.log('Final message element not found');
+        return;
+      }
+      
+      // Check if final message is visible (desktop or mobile)
+      const computedStyle = window.getComputedStyle(finalMessage);
+      const isVisible = finalMessage.style.display === 'flex' || 
+                       finalMessage.style.display === '' ||
+                       (isPortraitMobile() && finalMessage.classList.contains('active')) ||
+                       finalMessage.style.visibility === 'visible' ||
+                       computedStyle.display === 'flex' ||
+                       computedStyle.display !== 'none';
+      
+      if (!isVisible) {
+        console.log('Final message not visible yet, retrying...', {
+          styleDisplay: finalMessage.style.display,
+          computedDisplay: computedStyle.display,
+          hasActiveClass: finalMessage.classList.contains('active'),
+          isMobile: isPortraitMobile()
+        });
+        setTimeout(startInteractiveLoveElements, 500);
+        return;
+      }
+      
+      // Check if already initialized to avoid duplicate listeners
+      if (finalMessage.dataset.interactiveInitialized === 'true') {
+        console.log('Interactive elements already initialized');
+        return;
+      }
+      finalMessage.dataset.interactiveInitialized = 'true';
+      
+      console.log('Starting interactive love elements...');
 
       // Create floating love hearts around the letter
       function createLoveHeart() {
@@ -2972,21 +3379,70 @@
         const message = document.createElement('div');
         message.className = 'loveMessage';
         message.textContent = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+        message.style.position = 'fixed';
         message.style.left = x + 'px';
         message.style.top = y + 'px';
-        finalMessage.appendChild(message);
+        message.style.transform = 'translate(-50%, -50%)';
+        message.style.zIndex = '2000';
+        message.style.opacity = '0';
+        message.style.pointerEvents = 'none';
         
-        setTimeout(() => message.remove(), 2000);
+        // Ensure all required styles are set
+        if (!message.style.background) {
+          message.style.background = 'rgba(255, 182, 193, 0.9)';
+          message.style.color = '#8b0000';
+          message.style.padding = '8px 16px';
+          message.style.borderRadius = '20px';
+          message.style.fontSize = '16px';
+          message.style.fontWeight = 'bold';
+          message.style.boxShadow = '0 4px 15px rgba(255, 182, 193, 0.4)';
+          message.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+          message.style.whiteSpace = 'nowrap';
+        }
+        
+        document.body.appendChild(message);
+        
+        // Animate in
+        setTimeout(() => {
+          message.style.opacity = '1';
+          message.style.transform = 'translate(-50%, -50%) scale(1.1)';
+          message.style.transition = 'all 0.3s ease';
+        }, 10);
+        
+        // Animate out and remove
+        setTimeout(() => {
+          message.style.opacity = '0';
+          message.style.transform = 'translate(-50%, -150%) scale(0.8)';
+          setTimeout(() => {
+            if (message.parentNode) {
+              message.remove();
+            }
+          }, 300);
+        }, 1700);
       }
 
       // Letter-specific interactions
       const letterPaper = finalMessage.querySelector('.letterPaper');
-      const letterSeal = finalMessage.querySelector('.letterSeal');
       
       // Handle both click and touch interactions for love messages
       function handleFinalMessageInteraction(e) {
-        const x = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-        const y = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+        // Get coordinates from click or touch
+        let x, y;
+        if (e.touches && e.touches[0]) {
+          x = e.touches[0].clientX;
+          y = e.touches[0].clientY;
+        } else if (e.changedTouches && e.changedTouches[0]) {
+          x = e.changedTouches[0].clientX;
+          y = e.changedTouches[0].clientY;
+        } else {
+          x = e.clientX;
+          y = e.clientY;
+        }
+        
+        // Don't trigger if coordinates are invalid
+        if (!x || !y) return;
+        
+        console.log('Love message interaction at:', x, y);
         showLoveMessage(x, y);
         
         // Create burst of hearts on interaction
@@ -3006,42 +3462,17 @@
         }
       }
       
-      finalMessage.addEventListener('click', handleFinalMessageInteraction);
-      finalMessage.addEventListener('touchstart', handleFinalMessageInteraction);
-
-      // Special interaction for the letter seal
-      if (letterSeal) {
-        function handleSealInteraction(e) {
-          e.stopPropagation();
-          
-          // Create a special seal animation
-          letterSeal.style.transform = 'scale(1.3)';
-          letterSeal.style.transition = 'transform 0.3s ease';
-          
-          setTimeout(() => {
-            letterSeal.style.transform = 'scale(1)';
-          }, 300);
-          
-          // Create extra hearts around the seal
-          for (let i = 0; i < 12; i++) {
-            setTimeout(() => {
-              const heart = document.createElement('div');
-              heart.className = 'loveHeart';
-              heart.textContent = '💕';
-              heart.style.left = (letterSeal.offsetLeft + letterSeal.offsetWidth/2 + (Math.random() - 0.5) * 80) + 'px';
-              heart.style.top = (letterSeal.offsetTop + letterSeal.offsetHeight/2 + (Math.random() - 0.5) * 80) + 'px';
-              heart.style.animationDuration = '3s';
-              heart.style.fontSize = (16 + Math.random() * 12) + 'px';
-              finalMessage.appendChild(heart);
-              
-              setTimeout(() => heart.remove(), 3000);
-            }, i * 50);
-          }
-        }
-        
-        letterSeal.addEventListener('click', handleSealInteraction);
-        letterSeal.addEventListener('touchstart', handleSealInteraction);
-      }
+      // Remove existing listeners to avoid duplicates
+      finalMessage.removeEventListener('click', handleFinalMessageInteraction);
+      finalMessage.removeEventListener('touchstart', handleFinalMessageInteraction);
+      finalMessage.removeEventListener('touchend', handleFinalMessageInteraction);
+      
+      // Add event listeners with proper options
+      finalMessage.addEventListener('click', handleFinalMessageInteraction, { passive: true });
+      finalMessage.addEventListener('touchstart', handleFinalMessageInteraction, { passive: true });
+      finalMessage.addEventListener('touchend', handleFinalMessageInteraction, { passive: true });
+      
+      console.log('Interactive message handlers attached to final message');
 
       // Start continuous animations
       setInterval(createLoveHeart, 2000);
@@ -3062,19 +3493,18 @@
       }
     }
 
-    // Setup scroll indicator functionality
+    // Setup scroll indicator functionality (disabled - scroll indicator removed)
     function setupScrollIndicator() {
-      const finalMessage = document.getElementById('finalMessage');
-      const scrollIndicator = document.querySelector('.scrollIndicator');
-      
-      if (!finalMessage || !scrollIndicator) return;
+      // Scroll indicator has been removed - function disabled
+      return;
 
       let scrollTimeout;
       let isScrolling = false;
+      let isTouchingIndicator = false;
 
-      // Hide scroll indicator when scrolling starts
+      // Hide scroll indicator when scrolling starts (but not when touching the indicator)
       finalMessage.addEventListener('scroll', () => {
-        if (!isScrolling) {
+        if (!isScrolling && !isTouchingIndicator) {
           isScrolling = true;
           scrollIndicator.style.opacity = '0';
           scrollIndicator.style.transform = 'translateY(10px)';
@@ -3087,21 +3517,98 @@
         // Show indicator again after scrolling stops
         scrollTimeout = setTimeout(() => {
           isScrolling = false;
-          scrollIndicator.style.opacity = '0.8';
-          scrollIndicator.style.transform = 'translateY(0)';
+          if (!isTouchingIndicator) {
+            scrollIndicator.style.opacity = '0.8';
+            scrollIndicator.style.transform = 'translateY(0)';
+          }
         }, 1000);
       });
 
       // Click/touch scroll indicator to scroll to top
-      function handleScrollIndicatorClick() {
+      function handleScrollIndicatorClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Ensure indicator stays visible during interaction
+        scrollIndicator.style.opacity = '1';
+        scrollIndicator.style.transform = 'translateY(0)';
+        scrollIndicator.style.transition = 'none';
+        
         finalMessage.scrollTo({
           top: 0,
           behavior: 'smooth'
         });
+        
+        // Reset transition after scroll
+        setTimeout(() => {
+          scrollIndicator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        }, 100);
       }
       
-      scrollIndicator.addEventListener('click', handleScrollIndicatorClick);
-      scrollIndicator.addEventListener('touchstart', handleScrollIndicatorClick);
+      // Handle touch start on indicator
+      function handleTouchStart(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        isTouchingIndicator = true;
+        
+        // Keep indicator visible during touch
+        scrollIndicator.style.opacity = '1';
+        scrollIndicator.style.transform = 'translateY(0)';
+        scrollIndicator.style.transition = 'none';
+        
+        // Prevent any other touch handlers from firing
+        return false;
+      }
+      
+      // Handle touch end on indicator
+      function handleTouchEnd(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        // Scroll to top
+        finalMessage.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+        
+        // Reset touch state after a delay
+        setTimeout(() => {
+          isTouchingIndicator = false;
+          scrollIndicator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        }, 200);
+        
+        // Prevent any other touch handlers from firing
+        return false;
+      }
+      
+      // Add event listeners with capture phase to ensure they fire first
+      scrollIndicator.addEventListener('click', handleScrollIndicatorClick, true);
+      scrollIndicator.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+      scrollIndicator.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+      
+      // Prevent touch events from bubbling up
+      scrollIndicator.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }, { passive: false, capture: true });
+      
+      // Also prevent contextmenu and other events
+      scrollIndicator.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      });
+      
+      // Ensure the scroll indicator is properly styled for touch interaction
+      scrollIndicator.style.cursor = 'pointer';
+      scrollIndicator.style.touchAction = 'manipulation';
+      scrollIndicator.style.userSelect = 'none';
+      scrollIndicator.style.webkitUserSelect = 'none';
+      scrollIndicator.style.webkitTouchCallout = 'none';
 
       // Auto-hide indicator after 5 seconds if no scrolling
       setTimeout(() => {
